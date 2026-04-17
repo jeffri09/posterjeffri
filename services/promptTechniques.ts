@@ -58,10 +58,10 @@ Eksplorasi 3 jalur visual sebelum memilih yang terbaik:
    Tanpa makhluk hidup — hanya kebesaran ciptaan Allah
    Gradasi cahaya alami yang dramatis
 
-🔷 PATH C — GEOMETRIC ISLAMIC:
-   Pola arabesque/tessellation yang kompleks namun elegan
-   Warna-warna kaya dengan kedalaman layer
-   Inspirasi dari arsitektur masjid historis (tanpa gambar masjid)
+🔷 PATH C — TOPIK-DRIVEN:
+   Visual yang langsung merepresentasikan topik
+   Contoh: Api membara untuk neraka, taman indah untuk surga
+   Kartun tanpa wajah untuk topik yang melibatkan manusia
 
 → PILIH path yang paling cocok dengan mood topik "${d(data.title, '[Topik]')}"
 → Atau KOMBINASIKAN elemen terbaik dari setiap path`;
@@ -260,8 +260,8 @@ KEYWORD PEMICU VISUAL:
 
 ANTI-KEYWORD (HINDARI):
 → ❌ "Generic", "Clipart", "Stock photo feel"
-→ ❌ "Flat design", "Cartoon", "Illustration"
-→ ❌ "Template", "Basic", "Simple"`;
+→ ❌ "Template", "Basic", "Simple"
+→ ✅ "Faceless cartoon/illustration" DIBOLEHKAN jika topik memerlukan`;
 
 // ══════════════════════════════════════════════
 // OPTIMIZATION TECHNIQUES
@@ -410,7 +410,7 @@ export const techniqueActivePrompt = (data: PosterFormData): string => `
 → Jangan ada karakter yang terpotong atau overlap
 
 🟡 PENTING — Aturan Syar'i:
-→ TIDAK ADA gambar makhluk bernyawa (manusia, hewan, dst)
+→ Makhluk bernyawa BOLEH dalam gaya KARTUN TANPA WAJAH (tanpa mata/hidung/mulut)
 → TIDAK ADA simbol agama selain Islam
 → TIDAK ADA musik, instrumen, atau elemen hiburan
 
@@ -484,8 +484,8 @@ KELEMAHAN poster dakwah yang UMUM beredar:
 ❌ Masalah 4: Tipografi buruk — font tidak terbaca
 → SOLUSI KITA: Font premium, hierarki jelas, ukuran proporsional
 
-❌ Masalah 5: Menggunakan gambar makhluk hidup
-→ SOLUSI KITA: 100% aman syar'i — hanya tekstur, geometri, cahaya
+❌ Masalah 5: Menggunakan gambar makhluk hidup REALISTIS
+→ SOLUSI KITA: Aman syar'i — kartun tanpa wajah jika perlu, visual adaptif per topik
 
 → Poster kita HARUS mengatasi SEMUA kelemahan di atas`;
 

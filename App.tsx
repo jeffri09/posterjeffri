@@ -429,7 +429,7 @@ const App: React.FC = () => {
               }}>
                 <span style={{ color: 'var(--accent-gold)', fontSize: '12px', flexShrink: 0 }}>⚠️</span>
                 <p style={{ fontSize: '10px', color: 'var(--text-tertiary)', margin: 0 }}>
-                  Tidak boleh ada elemen manusia/makhluk hidup dalam poster.
+                  Makhluk bernyawa ditampilkan sebagai kartun tanpa wajah.
                 </p>
               </div>
             </div>

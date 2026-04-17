@@ -15,41 +15,35 @@ export const generatePosterContent = async (topic: string): Promise<Partial<Post
   const ai = getAiClient();
   
   const prompt = `
-    Anda adalah seorang Ustadz bermanhaj Salaf sekaligus Art Director Profesional.
-    Tugas: Buat konten lengkap untuk poster dakwah berdasarkan topik: "${topic}".
+    Anda adalah Ustadz bermanhaj Salaf & Art Director Profesional.
+    Buat konten poster dakwah untuk topik: "${topic}".
 
-    **INSTRUKSI LOGIKA DALIL (MANHAJ SALAF):**
-    1. **PRIORITAS UTAMA:** Cari Ayat Al-Qur'an yang relevan.
-    2. Jika tidak ada ayat yang spesifik, cari Hadits yang **SHAHIH** (Riwayat Bukhari, Muslim, Tirmidzi, dll).
-    3. Pastikan terjemahan sesuai dengan pemahaman Salafush Shalih (tidak menyimpang).
+    **DALIL:** Cari Ayat Al-Qur'an yang relevan. Jika tidak ada, gunakan Hadits SHAHIH (Bukhari/Muslim). Terjemahan sesuai pemahaman Salafush Shalih.
 
-    **INSTRUKSI KONTEN LAIN:**
-    1. **JUDUL (HEADLINE):** Buat judul yang menggunakan EMOTIONAL HOOK (pilih salah satu formula):
-       - PERTANYAAN RETORIS: "Masihkah Kamu Ragu Bersedekah?"
-       - PERNYATAAN BERANI: "HARTA TIDAK AKAN BERKURANG"
-       - KONTRADIKSI: "MEMBERI JUSTRU MENAMBAH"
-       - URGENSI LEMBUT: "JANGAN TUNDA KEBAIKAN INI"
-       Panjang maksimal: 5 kata. Hindari judul terlalu umum seperti "KEUTAMAAN SEDEKAH".
-    2. **NASIHAT:** Buat penjelasan singkat (2-3 kalimat) yang lembut, menyentuh hati, dan memotivasi untuk mengamalkan dalil tersebut.
-    3. **VISUAL (PENTING):** Buat deskripsi visual untuk background poster.
-       - **VISUAL STORYTELLING:** Pilih SATU visual metaphor yang merepresentasikan TRANSFORMASI atau HARAPAN. (Contoh untuk sedekah: Tangan yang memberi, benih yang tumbuh, air mengalir).
-       - **HINDARI:** Masjid generik, kaligrafi dekoratif tanpa makna.
-       - **GAYA:** Minimalis, Alam (Nature), atau Abstrak Islami yang Premium & Elegan.
-       - **READABILITY:** Fokus pada "Wide Negative Space" agar teks mudah dibaca.
-    4. **PALET WARNA:** Tentukan warna dominan, aksen, dan mood berdasarkan topik.
-       Format output WAJIB seperti ini:
-       - Dominan: [Warna Dominan] ([Kode Hex])
-       - Aksen: [Warna Aksen] ([Kode Hex])
-       - Brand Footer: Biru Tua (#0E2F73)
-       - Mood: [Kata Sifat Mood]
+    **JUDUL:** Buat emotional hook maksimal 5 kata. Contoh formula: pertanyaan retoris, pernyataan berani, kontradiksi, atau urgensi lembut.
 
-       Panduan Warna:
-       - Sedekah/Rezeki: Hijau Zamrud + Gold (ketenangan, kemakmuran)
-       - Sabar/Ujian: Biru Langit + Abu Silver (ketenangan, harapan)
-       - Taubat/Dosa: Ungu Tua + Putih (kekhusyukan, kesucian)
-       - Syukur: Orange Hangat + Krem (kehangatan, kegembiraan)
-       - Akhirat/Mati: Hitam + Gold (keagungan, keseriusan)
-       - Atau warna lain yang sesuai jika topik berbeda.
+    **NASIHAT:** 2-3 kalimat yang menyentuh hati dan memotivasi.
+
+    **VISUAL (PENTING — HARUS ADAPTIF SESUAI TOPIK):**
+    Buat deskripsi visual background yang SESUAI dengan topik, bukan ornamen generik.
+    Panduan:
+    - Neraka/Azab → Api membara, lava, suasana gelap dramatis
+    - Surga/Pahala → Taman hijau subur, sungai jernih, cahaya terang indah
+    - Sabar/Ujian → Gurun luas, pohon kokoh sendirian, ombak tenang
+    - Sedekah/Memberi → Hujan rahmat, air mengalir, tangan memberi (kartun tanpa wajah)
+    - Taubat/Ampunan → Cahaya terang menembus kegelapan, pintu terbuka
+    - Kematian → Jalan sunyi berkabut, matahari terbenam
+    - Birrul Walidain → Siluet/kartun tanpa wajah anak & orang tua
+    - Persaudaraan → Kartun tanpa wajah berjabat tangan
+    - Topik lain → Pilih visual yang paling merepresentasikan pesan
+
+    ATURAN MAKHLUK BERNYAWA: Jika topik memerlukan manusia/hewan, tampilkan sebagai KARTUN TANPA WAJAH (tanpa mata, hidung, mulut — hanya bentuk tubuh/siluet). Gaya ilustrasi minimalis.
+
+    Desain harus terlihat PROFESIONAL dan PREMIUM, bukan generik.
+    Fokus pada negative space agar teks mudah dibaca.
+
+    **PALET WARNA:** Tentukan warna yang cocok dengan topik & visual.
+    Format: Dominan: [Warna] ([Hex]) | Aksen: [Warna] ([Hex]) | Brand Footer: Biru Tua (#0E2F73) | Mood: [Kata Sifat]
   `;
 
   const modelsToTry = [

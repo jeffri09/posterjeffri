@@ -15,115 +15,81 @@ const generateCoreRules = (data: PosterFormData): string => {
 
   return `
 ════════════════════════════════════
-ATURAN MUTLAK — TIDAK BOLEH DILANGGAR
+ATURAN MUTLAK
 ════════════════════════════════════
-❌ DILARANG KERAS menampilkan:
-   - Manusia, wajah, tangan, tubuh (dalam bentuk apapun)
-   - Hewan atau makhluk hidup apapun
+❌ DILARANG:
+   - Wajah realistis, foto manusia/hewan realistis
    - Simbol agama selain Islam
-   - Elemen klise: bulan-bintang besar, Ka'bah ilustratif
    - Teks selain yang tertera dalam hierarki konten
 
-✅ WAJIB menggunakan elemen visual:
-   - Geometri Islami (pola arabesque, tessellation, girih)
-   - Tekstur alam non-makhluk: batu marmer, kayu, air tenang, pasir, kain linen, keramik
-   - Cahaya & bayangan abstrak (godrays, warm light, soft bokeh halus, lens flare halus)
-   - Motif kaligrafi sebagai elemen dekoratif (bukan konten utama)
-   - Ruang kosong (negative space) yang luas agar teks bernafas
+⚠️ ATURAN MAKHLUK BERNYAWA:
+   - BOLEH menampilkan manusia/hewan dalam gaya KARTUN TANPA WAJAH
+   - Wajah KOSONG (tanpa mata, hidung, mulut) — hanya siluet/bentuk tubuh
+   - Gaya: Ilustrasi minimalis, flat design, atau watercolor
+   - Gunakan HANYA jika topik memerlukan (birrul walidain, persaudaraan, sedekah, dll)
+
+✅ VISUAL ADAPTIF SESUAI TOPIK:
+   - Pilih elemen visual yang RELEVAN dengan topik poster
+   - Contoh: Api untuk neraka, taman untuk surga, hujan untuk rahmat
+   - Desain PROFESIONAL dan PREMIUM — bukan generik
+   - Geometri islami OPSIONAL — gunakan hanya jika cocok dengan topik
+   - Ruang kosong (negative space) agar teks mudah dibaca
 
 ════════════════════════════════════
-ATURAN LOGO
+LOGO & SPESIFIKASI TEKNIS
 ════════════════════════════════════
-File: logo.png
-- Posisi: POJOK KANAN ATAS
-- Scale: Proporsional, tidak boleh diubah bentuk atau warna
-- Hanya ukuran yang boleh disesuaikan
-
-════════════════════════════════════
-SPESIFIKASI TEKNIS
-════════════════════════════════════
-- Resolusi: 3280 x 4096 pixel (Rasio 4:5 / Portrait)
-- Kualitas: High resolution, hyper-realistic texture, professional lighting
-- Style: Minimalis Elegan — sedikit elemen, kualitas tinggi
-- Komposisi: Clean, balanced, tidak penuh sesak
+Logo: logo.png — Pojok kanan atas, proporsional
+Resolusi: 3280 x 4096 pixel (4:5 Portrait)
+Kualitas: High resolution, professional lighting
+Style: Premium & modern — desain mendukung penyampaian pesan dakwah
 
 PALET WARNA:
-${d(data.colorPalette, "- Dominan: Hijau Zamrud Tua (#1B4332) atau Emas Gelap (#B8860B)\n- Aksen: Putih Bersih (#FFFFFF) dan Krem (#FAF7F2)\n- Brand Footer: Biru Tua (#0E2F73)\n- Mood: Hangat, menenangkan, penuh harapan")}
+${d(data.colorPalette, "- Dominan: Sesuai topik\\n- Aksen: Sesuai mood\\n- Brand Footer: Biru Tua (#0E2F73)\\n- Mood: Sesuai pesan dakwah")}
 
 TIPOGRAFI:
-- Headline: Serif Bold / Slab Serif — kesan otoritatif dan tegas
-- Narasi: Sans-Serif ringan — mudah dibaca, terasa lembut
-- Arab: Font khusus Arabic yang jelas (karakter Uthmanic/Naskh)
-- ATURAN: Headline minimal 3x lebih besar dari narasi
+- Headline: Serif Bold — kesan otoritatif, minimal 3x lebih besar dari narasi
+- Narasi: Sans-Serif ringan — mudah dibaca
+- Arab: Font Naskh/Uthmanic yang jelas
 
 ════════════════════════════════════
-LAYOUT ZONES (WAJIB DIIKUTI)
+LAYOUT ZONES
 ════════════════════════════════════
 ┌──────────────────────────────┐
 │  [Zone A] Logo + Margin 10%  │
 ├──────────────────────────────┤
-│                              │
 │  [Zone B] Konten Utama  55%  │
 │  Headline + Narasi + Dalil   │
-│                              │
 ├──────────────────────────────┤
 │  [Zone C] Visual Accent  25% │
-│  Background pattern/tekstur  │
-│  "mengintip" di balik konten │
 ├──────────────────────────────┤
 │  [Zone D] Footer Strip  10%  │
 └──────────────────────────────┘
-
-MARGIN: Minimal 120px di semua sisi. Tidak ada elemen menyentuh tepi 
-kecuali footer strip.
+MARGIN: Minimal 120px semua sisi.
 
 ════════════════════════════════════
-HIERARKI KONTEN TEKS (URUTAN WAJIB)
+HIERARKI KONTEN
 ════════════════════════════════════
+[1] HEADLINE: "${d(data.title, "[Judul Poster]")}"
+→ Font Serif Bold, ukuran terbesar, warna aksen
 
-[1] HEADLINE — Paling Dominan
-"${d(data.title, "[Judul Poster]")}"
-→ Font Serif Bold, ukuran terbesar, warna sesuai palet aksen (putih/emas/krem)
-→ Tambahkan garis emas tipis di bawah headline sebagai pemisah elegan
+[2] NASIHAT: "${d(data.advice, "[Isi Nasihat]")}"
+→ Font Sans-Serif, warna terang
 
-[2] NARASI — Ukuran Sedang
-"${d(data.advice, "[Isi Nasihat]")}"
-→ Font Sans-Serif, warna terang sesuai palet, line-height lega
-
-[3] DALIL — Ayat/Hadits & Terjemahan
-Arab:
-"${d(data.quoteArabic, "[Teks Arab]")}"
-→ Font Arabic Naskh/Uthmanic, jelas dan besar, rata tengah
-
-Terjemahan:
-"${d(data.quoteTranslation, "[Terjemahan]")}"
-→ Font Sans-Serif italic, warna terang sesuai palet, ukuran lebih kecil dari Arab
-
-[4] SIGNATURE ELEMENT (Delight Factor)
-→ Satu ornamen arabesque halus atau pola geometri islami 
-   di sudut bawah kiri, opacity 15-20%, sebagai aksen premium.
-→ Tidak boleh mendominasi atau mengganggu keterbacaan teks.
+[3] DALIL:
+Arab: "${d(data.quoteArabic, "[Teks Arab]")}"
+Terjemahan: "${d(data.quoteTranslation, "[Terjemahan]")}"
 
 ════════════════════════════════════
 VISUAL BACKGROUND
 ════════════════════════════════════
-Deskripsi: ${d(data.visualContext, "Permukaan marmer hijau tua dengan urat-urat emas alami, diterangi cahaya pagi yang masuk dari samping kiri (soft godrays), menciptakan gradasi dari terang ke gelap secara halus. Di sudut tertentu terdapat pola geometri islami yang terukir sangat halus — seperti relief batu — dengan kedalaman tekstur yang terasa nyata.")}
-
-Atmosfer: Tenang, mewah, penuh harapan, dan berwibawa.
-Tidak ada makhluk hidup dalam frame manapun.
-Tidak ada benda spesifik lainnya yang bisa mengalihkan perhatian dari teks.
+${d(data.visualContext, "Visual yang sesuai dengan topik poster — desain profesional dan mendukung penyampaian pesan dakwah.")}
 
 ════════════════════════════════════
-ATURAN FOOTER (WAJIB — SELALU TAMPIL)
+FOOTER (WAJIB)
 ════════════════════════════════════
-- Visual: Strip putih horizontal solid, full width, bagian paling bawah
-- Warna teks: Biru Tua (#0E2F73) — kontras maksimal di atas putih
-- Konten (rata tengah / centered):
-  [Ikon IG] @kuncikebaikantv  
-  [Ikon FB] Yayasan Kunci Kebaikan OKU Timur  
-  [Ikon Web] www.kuncikebaikan.com
-- Ikon: Gunakan ikon sosial media flat/outline yang bersih
-- Tinggi strip footer: cukup untuk teks terbaca nyaman (±180–220px)`;
+Strip putih horizontal, full width, paling bawah.
+Warna teks: Biru Tua (#0E2F73)
+Konten: [IG] @kuncikebaikantv | [FB] Yayasan Kunci Kebaikan OKU Timur | [Web] www.kuncikebaikan.com`;
 };
 
 /**

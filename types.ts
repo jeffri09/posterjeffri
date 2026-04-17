@@ -39,8 +39,8 @@ export const INITIAL_FORM_DATA: PosterFormData = {
   quoteArabic: "وَمَا أَنْفَقْتُمْ مِنْ شَيْءٍ فَهُوَ يُخْلِفُهُ ۖ وَهُوَ خَيْرُ الرَّازِقِينَ",
   quoteTranslation: "Dan apa saja yang kamu infakkan, Allah akan menggantinya dan Dia-lah Pemberi rizki yang terbaik (QS. Saba': 39)",
   advice: "Jangan pernah ragu untuk berbagi. Harta yang dikeluarkan di jalan Allah tidak akan berkurang, justru akan bertambah berkah dan diganti dengan yang lebih baik.",
-  visualContext: "Permukaan marmer hijau tua dengan urat-urat emas alami, diterangi cahaya pagi yang masuk dari samping kiri (soft godrays), menciptakan gradasi dari terang ke gelap secara halus. Di sudut tertentu terdapat pola geometri islami yang terukir sangat halus — seperti relief batu — dengan kedalaman tekstur yang terasa nyata. Atmosfer: Tenang, mewah, penuh harapan, dan berwibawa.",
-  colorPalette: "Dominan: Hijau Zamrud Tua (#1B4332) atau Emas Gelap (#B8860B)\nAksen: Putih Bersih (#FFFFFF) dan Krem (#FAF7F2)\nBrand Footer: Biru Tua (#0E2F73)\nMood: Hangat, menenangkan, penuh harapan"
+  visualContext: "Hujan emas turun perlahan di atas padang rumput hijau subur yang luas, dengan cahaya matahari pagi menembus awan — menciptakan suasana penuh berkah dan harapan. Desain profesional, premium, dengan negative space yang luas untuk teks.",
+  colorPalette: "Dominan: Hijau Zamrud (#1B4332)\nAksen: Emas (#D4A853)\nBrand Footer: Biru Tua (#0E2F73)\nMood: Penuh harapan, berkah"
 };
 
 // --- Watermark Types ---
