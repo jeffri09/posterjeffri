@@ -297,69 +297,104 @@ async function processGeminiSplash(
   height: number,
   onProgress?: ProgressCallback
 ): Promise<void> {
-  onProgress?.(25, 'Mendeteksi area watermark pojok kanan bawah...');
+  onProgress?.(25, 'Menganalisis anomali piksel di pojok kanan bawah...');
 
   const { data } = imageData;
 
   // Kotak lokasi Gemini Watermark: ~6% lebar dan ~5% tinggi
-  const boxWidth = Math.min(Math.floor(width * 0.06), 250);
-  const boxHeight = Math.min(Math.floor(height * 0.05), 200);
+  const boxWidth = Math.min(Math.floor(width * 0.08), 280);
+  const boxHeight = Math.min(Math.floor(height * 0.06), 250);
   
   const startX = width - boxWidth;
   const startY = height - boxHeight;
 
-  // Pastikan kita punya cukup pixel di sebelah kiri untuk disalin
-  if (startX - boxWidth < 0) return;
+  // Pastikan batas aman
+  if (startX < 0 || startY < 0) return;
 
-  onProgress?.(50, 'Menyalin tekstur sekitar (Mirror Cloning)...');
+  onProgress?.(50, 'Menjalankan Mathematical Median Filter...');
 
-  // Simpan data pixel original sebagai sumber salinan yang tidak berubah
+  // Simpan data pixel original sebagai sumber perhitungan
   const originalData = new Uint8ClampedArray(data);
 
-  onProgress?.(75, 'Menambal watermark secara seamless...');
-
-  // Area transisi blur/fade di bagian atas kotak agar menyatu mulus
-  const blendMarginY = Math.floor(boxHeight * 0.3); // 30% dari atas kotak
+  // Ukuran Jendela Filter: radius 15 artinya 31x31 piksel
+  // Jendela besar wajib dipakai agar mampu 'melibas' ketebalan bintang Gemini
+  const radius = 15;
+  const histR = new Int32Array(256);
+  const histG = new Int32Array(256);
+  const histB = new Int32Array(256);
 
   for (let y = startY; y < height; y++) {
-    const isTopBlend = (y - startY) < blendMarginY;
-    const blendRatioY = isTopBlend ? (y - startY) / blendMarginY : 1; 
-
     for (let x = startX; x < width; x++) {
-      const targetIdx = (y * width + x) * 4;
-      
-      // Logika Mirroring Horizontal:
-      // Ambil piksel dengan jarak yang sama ke kiri dari batas startX
-      const offsetX = x - startX;
-      const sourceX = startX - 1 - offsetX;
-      const sourceIdx = (y * width + sourceX) * 4;
+      // 1. Reset Histogram
+      histR.fill(0);
+      histG.fill(0);
+      histB.fill(0);
+      let totalPixels = 0;
 
-      const r = originalData[sourceIdx];
-      const g = originalData[sourceIdx + 1];
-      const b = originalData[sourceIdx + 2];
-      const a = originalData[sourceIdx + 3];
-
-      // Di bagian margin atas, kita lebur perlahan (fade) dari piksel asli ke piksel kloning
-      if (isTopBlend) {
-        const origR = originalData[targetIdx];
-        const origG = originalData[targetIdx + 1];
-        const origB = originalData[targetIdx + 2];
-        const origA = originalData[targetIdx + 3];
-
-        // Kurva Cubic Easing untuk perpaduan yang sangat halus
-        const ease = blendRatioY * blendRatioY * (3 - 2 * blendRatioY);
-
-        data[targetIdx] = clamp(Math.round(r * ease + origR * (1 - ease)), 0, 255);
-        data[targetIdx + 1] = clamp(Math.round(g * ease + origG * (1 - ease)), 0, 255);
-        data[targetIdx + 2] = clamp(Math.round(b * ease + origB * (1 - ease)), 0, 255);
-        data[targetIdx + 3] = clamp(Math.round(a * ease + origA * (1 - ease)), 0, 255);
-      } else {
-        // Tumpuk langsung menggunakan hasil kloning mirroring
-        data[targetIdx] = r;
-        data[targetIdx + 1] = g;
-        data[targetIdx + 2] = b;
-        data[targetIdx + 3] = a;
+      // 2. Populasi warna-warna tetangga ke dalam Histogram
+      for (let wy = -radius; wy <= radius; wy++) {
+        for (let wx = -radius; wx <= radius; wx++) {
+          const nx = x + wx;
+          const ny = y + wy;
+          // Pastikan tidak keluar batas gambar
+          if (nx >= 0 && nx < width && ny >= 0 && ny < height) {
+            const nIdx = (ny * width + nx) * 4;
+            histR[originalData[nIdx]]++;
+            histG[originalData[nIdx + 1]]++;
+            histB[originalData[nIdx + 2]]++;
+            totalPixels++;
+          }
+        }
       }
+
+      // 3. Pencarian nilai Median super cepat tanpa fungsi Array.sort() (O(1) Counting Sort)
+      const targetHalf = totalPixels / 2;
+      let countR = 0, medR = 0;
+      for (let i = 0; i < 256; i++) { countR += histR[i]; if (countR >= targetHalf) { medR = i; break; } }
+      
+      let countG = 0, medG = 0;
+      for (let i = 0; i < 256; i++) { countG += histG[i]; if (countG >= targetHalf) { medG = i; break; } }
+      
+      let countB = 0, medB = 0;
+      for (let i = 0; i < 256; i++) { countB += histB[i]; if (countB >= targetHalf) { medB = i; break; } }
+
+      // 4. Analisis Anomali
+      const targetIdx = (y * width + x) * 4;
+      const origR = originalData[targetIdx];
+      const origG = originalData[targetIdx + 1];
+      const origB = originalData[targetIdx + 2];
+
+      // Hitung luminansi/kecerahan cahaya
+      const lumOrig = origR * 0.299 + origG * 0.587 + origB * 0.114;
+      const lumMed = medR * 0.299 + medG * 0.587 + medB * 0.114;
+
+      // Evaluasi apakah piksel asli merupakan benda asing putih bersinar (Watermark Gemini):
+      // - Jauh LEBIH TERANG dari sekitarnya (+15 px luminansi)
+      // - Warnanya memang lumayan terang (> 130 absolut)
+      // Jika mendeteksi karakter teks warna gelap (misal biru tua), aturan ini bernilai GAgal (Aman).
+      const isWatermark = lumOrig > lumMed + 15 && lumOrig > 130;
+
+      if (isWatermark) {
+        // Soft-Masking: Lakukan peleburan halus di pinggiran bintang transparan
+        // Jika anomali tipis, lebur setengah asli setengah median. 
+        // Jika anomali tebal (>35), hajar 100% menggunakan warna median murni.
+        const blendStrength = clamp((lumOrig - lumMed - 10) / 25, 0, 1);
+        
+        data[targetIdx] = clamp(Math.round(origR * (1 - blendStrength) + medR * blendStrength), 0, 255);
+        data[targetIdx + 1] = clamp(Math.round(origG * (1 - blendStrength) + medG * blendStrength), 0, 255);
+        data[targetIdx + 2] = clamp(Math.round(origB * (1 - blendStrength) + medB * blendStrength), 0, 255);
+      } else {
+        // Bukan watermark, biarkan aslinya utuh 100%!
+        data[targetIdx] = origR;
+        data[targetIdx + 1] = origG;
+        data[targetIdx + 2] = origB;
+      }
+    }
+    
+    // Kirim progress bar palsu agar user tidak mengira macet
+    if (y % 15 === 0) {
+      const prog = 50 + Math.floor(((y - startY) / boxHeight) * 35);
+      onProgress?.(prog, 'Menghancurkan watermark... ' + prog + '%');
     }
   }
 
