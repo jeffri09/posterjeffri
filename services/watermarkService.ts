@@ -43,6 +43,9 @@ export const removeWatermark = async (
   const imageData = ctx.getImageData(0, 0, width, height);
 
   switch (config.method) {
+    case 'gemini-splash':
+      await processGeminiSplash(imageData, width, height, onProgress);
+      break;
     case 'alpha-composite':
       await processAlphaComposite(imageData, config.intensity, onProgress);
       break;
@@ -284,8 +287,94 @@ async function processSmartNoise(
 }
 
 // ══════════════════════════════════════════════
+// METHOD 4: GEMINI SPLASH TARGETED PATCHING
+// Menarget area kanan-bawah secara spesifik menggunakan warna sampel sekitar
+// ══════════════════════════════════════════════
+
+async function processGeminiSplash(
+  imageData: ImageData,
+  width: number,
+  height: number,
+  onProgress?: ProgressCallback
+): Promise<void> {
+  onProgress?.(25, 'Mendeteksi area watermark pojok kanan bawah...');
+
+  const { data } = imageData;
+
+  // The Gemini Watermark is usually in the very bottom right.
+  // We'll target the bottom 6% and right 8% of the image.
+  // For a 3280x4096 poster, this is ~260x245 pixels which easily covers the logo
+  
+  const boxWidth = Math.min(Math.floor(width * 0.08), 300);
+  const boxHeight = Math.min(Math.floor(height * 0.06), 250);
+  
+  const startX = width - boxWidth;
+  const startY = height - boxHeight;
+
+  onProgress?.(50, 'Mengambil sampel warna footer...');
+
+  // Sample the color from slightly to the left of the bounding box
+  // Since the poster has a solid footer strip, the color just left of the box is the true background color
+  const sampleX = Math.max(0, startX - 20);
+  const sampleY = Math.max(0, height - Math.floor(boxHeight / 2));
+  
+  const sampleIdx = (sampleY * width + sampleX) * 4;
+  const sampleR = data[sampleIdx];
+  const sampleG = data[sampleIdx + 1];
+  const sampleB = data[sampleIdx + 2];
+
+  onProgress?.(75, 'Menambal watermark dengan warna solid...');
+
+  // Fill the bottom right box with the sampled color, plus slight Gaussian noise to avoid banding
+  for (let y = startY; y < height; y++) {
+    for (let x = startX; x < width; x++) {
+      const idx = (y * width + x) * 4;
+      
+      const noiseR = (Math.random() - 0.5) * 4; // subtle noise ±2 
+      const noiseG = (Math.random() - 0.5) * 4; 
+      const noiseB = (Math.random() - 0.5) * 4; 
+
+      data[idx] = clamp(Math.round(sampleR + noiseR), 0, 255);
+      data[idx + 1] = clamp(Math.round(sampleG + noiseG), 0, 255);
+      data[idx + 2] = clamp(Math.round(sampleB + noiseB), 0, 255);
+      // keep alpha as is
+    }
+  }
+
+  onProgress?.(90, 'Memperhalus transisi tepi tambalan...');
+  
+  // Blend the edges of the box so it doesn't look like a sharp hard-coded cut
+  const blendMargin = 15;
+  for (let y = startY - blendMargin; y < height; y++) {
+    for (let x = startX - blendMargin; x < width; x++) {
+      // only process the L-shaped border region outside the box
+      const isTopBorder = y < startY && x >= startX;
+      const isLeftBorder = x < startX && y >= startY;
+      const isCornerBorder = y < startY && x < startX;
+      
+      if (isTopBorder || isLeftBorder || isCornerBorder) {
+        const idx = (y * width + x) * 4;
+        
+        let dist = 0;
+        if (isTopBorder) dist = startY - y;
+        else if (isLeftBorder) dist = startX - x;
+        else dist = Math.sqrt(Math.pow(startX - x, 2) + Math.pow(startY - y, 2));
+
+        if (dist <= blendMargin) {
+          const ratio = dist / blendMargin; // 0 at inner edge, 1 at outer edge
+          
+          data[idx] = clamp(Math.round(data[idx] * ratio + sampleR * (1 - ratio)), 0, 255);
+          data[idx + 1] = clamp(Math.round(data[idx + 1] * ratio + sampleG * (1 - ratio)), 0, 255);
+          data[idx + 2] = clamp(Math.round(data[idx + 2] * ratio + sampleB * (1 - ratio)), 0, 255);
+        }
+      }
+    }
+  }
+}
+
+// ══════════════════════════════════════════════
 // COMBINED METHOD
-// Uses all three methods strategically
+// Uses all three legacy methods strategically
 // ══════════════════════════════════════════════
 
 async function processCombined(

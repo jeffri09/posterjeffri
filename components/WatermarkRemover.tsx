@@ -6,10 +6,11 @@ import { ImageDropzone } from './ImageDropzone';
 import { ImageCompare } from './ImageCompare';
 
 const METHODS: { id: WatermarkMethod; label: string; icon: string; desc: string }[] = [
+  { id: 'gemini-splash', label: 'Gemini Splash (Auto)', icon: '✨', desc: 'Hapus watermark Google Gemini di pojok kanan bawah' },
   { id: 'alpha-composite', label: 'Alpha Compositing', icon: '🔄', desc: 'Reverse formula watermark transparan' },
   { id: 'frequency-perturbation', label: 'Frequency Perturbation', icon: '📊', desc: 'Disrupsi pola frekuensi pixel' },
   { id: 'smart-noise', label: 'Smart Noise', icon: '🎲', desc: 'Noise adaptif terarah' },
-  { id: 'combined', label: 'Combined (Recommended)', icon: '💎', desc: 'Gabungan ketiga metode' },
+  { id: 'combined', label: 'Combined Legacy', icon: '💎', desc: 'Gabungan metode lama' },
 ];
 
 const FORMATS: { id: 'png' | 'jpeg' | 'webp'; label: string }[] = [

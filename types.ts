@@ -44,7 +44,7 @@ export const INITIAL_FORM_DATA: PosterFormData = {
 };
 
 // --- Watermark Types ---
-export type WatermarkMethod = 'alpha-composite' | 'frequency-perturbation' | 'smart-noise' | 'combined';
+export type WatermarkMethod = 'alpha-composite' | 'frequency-perturbation' | 'smart-noise' | 'gemini-splash' | 'combined';
 
 export interface WatermarkConfig {
   method: WatermarkMethod;
@@ -56,7 +56,7 @@ export interface WatermarkConfig {
 }
 
 export const DEFAULT_WATERMARK_CONFIG: WatermarkConfig = {
-  method: 'combined',
+  method: 'gemini-splash',
   intensity: 70,
   preserveQuality: true,
   stripMetadata: true,
