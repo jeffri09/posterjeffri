@@ -55,8 +55,7 @@ export const generatePosterContent = async (topic: string): Promise<Partial<Post
   const modelsToTry = [
     'gemini-3.1-flash-lite', 
     'gemini-2.5-flash-lite', 
-    'gemini-2.5-flash',
-    'gemini-1.5-flash'
+    'gemini-2.5-flash'
   ];
   let lastError: any = null;
 
