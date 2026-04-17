@@ -301,75 +301,69 @@ async function processGeminiSplash(
 
   const { data } = imageData;
 
-  // The Gemini Watermark is usually in the very bottom right.
-  // We'll target the bottom 6% and right 8% of the image.
-  // For a 3280x4096 poster, this is ~260x245 pixels which easily covers the logo
-  
-  const boxWidth = Math.min(Math.floor(width * 0.08), 300);
-  const boxHeight = Math.min(Math.floor(height * 0.06), 250);
+  // Kotak lokasi Gemini Watermark: ~6% lebar dan ~5% tinggi
+  const boxWidth = Math.min(Math.floor(width * 0.06), 250);
+  const boxHeight = Math.min(Math.floor(height * 0.05), 200);
   
   const startX = width - boxWidth;
   const startY = height - boxHeight;
 
-  onProgress?.(50, 'Mengambil sampel warna footer...');
+  // Pastikan kita punya cukup pixel di sebelah kiri untuk disalin
+  if (startX - boxWidth < 0) return;
 
-  // Sample the color from slightly to the left of the bounding box
-  // Since the poster has a solid footer strip, the color just left of the box is the true background color
-  const sampleX = Math.max(0, startX - 20);
-  const sampleY = Math.max(0, height - Math.floor(boxHeight / 2));
-  
-  const sampleIdx = (sampleY * width + sampleX) * 4;
-  const sampleR = data[sampleIdx];
-  const sampleG = data[sampleIdx + 1];
-  const sampleB = data[sampleIdx + 2];
+  onProgress?.(50, 'Menyalin tekstur sekitar (Mirror Cloning)...');
 
-  onProgress?.(75, 'Menambal watermark dengan warna solid...');
+  // Simpan data pixel original sebagai sumber salinan yang tidak berubah
+  const originalData = new Uint8ClampedArray(data);
 
-  // Fill the bottom right box with the sampled color, plus slight Gaussian noise to avoid banding
+  onProgress?.(75, 'Menambal watermark secara seamless...');
+
+  // Area transisi blur/fade di bagian atas kotak agar menyatu mulus
+  const blendMarginY = Math.floor(boxHeight * 0.3); // 30% dari atas kotak
+
   for (let y = startY; y < height; y++) {
+    const isTopBlend = (y - startY) < blendMarginY;
+    const blendRatioY = isTopBlend ? (y - startY) / blendMarginY : 1; 
+
     for (let x = startX; x < width; x++) {
-      const idx = (y * width + x) * 4;
+      const targetIdx = (y * width + x) * 4;
       
-      const noiseR = (Math.random() - 0.5) * 4; // subtle noise ±2 
-      const noiseG = (Math.random() - 0.5) * 4; 
-      const noiseB = (Math.random() - 0.5) * 4; 
+      // Logika Mirroring Horizontal:
+      // Ambil piksel dengan jarak yang sama ke kiri dari batas startX
+      const offsetX = x - startX;
+      const sourceX = startX - 1 - offsetX;
+      const sourceIdx = (y * width + sourceX) * 4;
 
-      data[idx] = clamp(Math.round(sampleR + noiseR), 0, 255);
-      data[idx + 1] = clamp(Math.round(sampleG + noiseG), 0, 255);
-      data[idx + 2] = clamp(Math.round(sampleB + noiseB), 0, 255);
-      // keep alpha as is
-    }
-  }
+      const r = originalData[sourceIdx];
+      const g = originalData[sourceIdx + 1];
+      const b = originalData[sourceIdx + 2];
+      const a = originalData[sourceIdx + 3];
 
-  onProgress?.(90, 'Memperhalus transisi tepi tambalan...');
-  
-  // Blend the edges of the box so it doesn't look like a sharp hard-coded cut
-  const blendMargin = 15;
-  for (let y = startY - blendMargin; y < height; y++) {
-    for (let x = startX - blendMargin; x < width; x++) {
-      // only process the L-shaped border region outside the box
-      const isTopBorder = y < startY && x >= startX;
-      const isLeftBorder = x < startX && y >= startY;
-      const isCornerBorder = y < startY && x < startX;
-      
-      if (isTopBorder || isLeftBorder || isCornerBorder) {
-        const idx = (y * width + x) * 4;
-        
-        let dist = 0;
-        if (isTopBorder) dist = startY - y;
-        else if (isLeftBorder) dist = startX - x;
-        else dist = Math.sqrt(Math.pow(startX - x, 2) + Math.pow(startY - y, 2));
+      // Di bagian margin atas, kita lebur perlahan (fade) dari piksel asli ke piksel kloning
+      if (isTopBlend) {
+        const origR = originalData[targetIdx];
+        const origG = originalData[targetIdx + 1];
+        const origB = originalData[targetIdx + 2];
+        const origA = originalData[targetIdx + 3];
 
-        if (dist <= blendMargin) {
-          const ratio = dist / blendMargin; // 0 at inner edge, 1 at outer edge
-          
-          data[idx] = clamp(Math.round(data[idx] * ratio + sampleR * (1 - ratio)), 0, 255);
-          data[idx + 1] = clamp(Math.round(data[idx + 1] * ratio + sampleG * (1 - ratio)), 0, 255);
-          data[idx + 2] = clamp(Math.round(data[idx + 2] * ratio + sampleB * (1 - ratio)), 0, 255);
-        }
+        // Kurva Cubic Easing untuk perpaduan yang sangat halus
+        const ease = blendRatioY * blendRatioY * (3 - 2 * blendRatioY);
+
+        data[targetIdx] = clamp(Math.round(r * ease + origR * (1 - ease)), 0, 255);
+        data[targetIdx + 1] = clamp(Math.round(g * ease + origG * (1 - ease)), 0, 255);
+        data[targetIdx + 2] = clamp(Math.round(b * ease + origB * (1 - ease)), 0, 255);
+        data[targetIdx + 3] = clamp(Math.round(a * ease + origA * (1 - ease)), 0, 255);
+      } else {
+        // Tumpuk langsung menggunakan hasil kloning mirroring
+        data[targetIdx] = r;
+        data[targetIdx + 1] = g;
+        data[targetIdx + 2] = b;
+        data[targetIdx + 3] = a;
       }
     }
   }
+
+  onProgress?.(90, 'Memperhalus hasil penambalan...');
 }
 
 // ══════════════════════════════════════════════
