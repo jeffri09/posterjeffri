@@ -87,9 +87,15 @@ ${d(data.visualContext, "Visual yang sesuai dengan topik poster — desain profe
 ════════════════════════════════════
 FOOTER (WAJIB)
 ════════════════════════════════════
-Strip putih horizontal, full width, paling bawah.
+Strip putih horizontal, full width, paling bawah (SEBELUM frame hitam).
 Warna teks: Biru Tua (#0E2F73)
-Konten: [IG] @kuncikebaikantv | [FB] Yayasan Kunci Kebaikan OKU Timur | [Web] www.kuncikebaikan.com`;
+Konten: [IG] @kuncikebaikantv | [FB] Yayasan Kunci Kebaikan OKU Timur | [Web] www.kuncikebaikan.com
+
+════════════════════════════════════
+SACRIFICIAL PADDING (ATURAN MESIN MUTLAK)
+════════════════════════════════════
+Anda WAJIB menambahkan sebuah FRAME HALAMAN HITAM POLOS (Solid Black) setebal 250px di bawah Footer.
+Bagian terbawah gambar ini murni hitam tak berisi apa-apa, digunakan sebagai area buangan (sacrificial margin).`;
 };
 
 /**

@@ -30,19 +30,43 @@ type ProgressCallback = (progress: number, status: string) => void;
 export const removeWatermark = async (
   file: File,
   config: WatermarkConfig,
+  hfToken?: string,
   onProgress?: ProgressCallback
 ): Promise<ProcessingResult> => {
   onProgress?.(5, 'Memuat gambar...');
   
   const img = await loadImage(file);
   const { canvas, ctx } = imageToCanvas(img);
-  const { width, height } = canvas;
+  let { width, height } = canvas;
+  let finalCanvas = canvas;
+  let finalCtx = ctx;
 
   onProgress?.(15, 'Menganalisis gambar...');
 
-  const imageData = ctx.getImageData(0, 0, width, height);
+  let imageData = ctx.getImageData(0, 0, width, height);
+
+  // Cloud AI & Crop returns a new canvas, unlike standard filters which mutate ImageData in place.
+  let isNewCanvas = false;
 
   switch (config.method) {
+    case 'cloud-ai':
+      if (!hfToken) throw new Error('Hugging Face Token is required for Cloud AI Inpainting.');
+      const resAI = await processCloudAI(canvas, width, height, hfToken, onProgress);
+      finalCanvas = resAI.canvas;
+      finalCtx = resAI.ctx;
+      width = finalCanvas.width;
+      height = finalCanvas.height;
+      isNewCanvas = true;
+      break;
+    case 'smart-crop':
+      // Memotong bagian 250px bawah (atau sesuai intensity)
+      const resCrop = await processSmartCrop(canvas, width, height, config.intensity, onProgress);
+      finalCanvas = resCrop.canvas;
+      finalCtx = resCrop.ctx;
+      width = finalCanvas.width;
+      height = finalCanvas.height;
+      isNewCanvas = true;
+      break;
     case 'gemini-splash':
       await processGeminiSplash(imageData, width, height, onProgress);
       break;
@@ -62,16 +86,20 @@ export const removeWatermark = async (
   }
 
   onProgress?.(90, 'Merender hasil...');
-  ctx.putImageData(imageData, 0, 0);
+  
+  if (!isNewCanvas) {
+    // If not a new canvas, apply the mutated ImageData
+    finalCtx.putImageData(imageData, 0, 0);
+  }
 
   // Apply quality preservation if enabled
   if (config.preserveQuality) {
-    applyQualityPreservation(ctx, width, height);
+    applyQualityPreservation(finalCtx, width, height);
   }
 
   onProgress?.(95, 'Menyiapkan output...');
 
-  const dataUrl = canvasToDataUrl(canvas, config.outputFormat, config.outputQuality / 100);
+  const dataUrl = canvasToDataUrl(finalCanvas, config.outputFormat, config.outputQuality / 100);
 
   onProgress?.(100, 'Selesai!');
 
@@ -83,6 +111,123 @@ export const removeWatermark = async (
     processedSize: Math.round(dataUrl.length * 0.75), // approximate
   };
 };
+
+// ══════════════════════════════════════════════
+// OPSI KERAS 1: SMART AUTO-CROP
+// ══════════════════════════════════════════════
+async function processSmartCrop(
+  sourceCanvas: HTMLCanvasElement,
+  width: number,
+  height: number,
+  intensity: number,
+  onProgress?: ProgressCallback
+): Promise<{ canvas: HTMLCanvasElement, ctx: CanvasRenderingContext2D }> {
+  onProgress?.(50, 'Memotong frame pengorbanan di ujung bawah...');
+  
+  // Asumsikan default intensity 50% berarti crop 250px.
+  // Jika 100%, crop sampai 500px.
+  const cropAmount = Math.floor((intensity / 50) * 200); 
+  const newHeight = Math.max(10, height - cropAmount);
+
+  const newCanvas = document.createElement('canvas');
+  newCanvas.width = width;
+  newCanvas.height = newHeight;
+  const newCtx = newCanvas.getContext('2d')!;
+
+  // Gambar ulang tetapi hanya potong bagian atas hingga newHeight
+  newCtx.drawImage(sourceCanvas, 0, 0, width, newHeight, 0, 0, width, newHeight);
+
+  onProgress?.(100, `Cropping selesai (-${cropAmount}px)`);
+  return { canvas: newCanvas, ctx: newCtx };
+}
+
+// ══════════════════════════════════════════════
+// OPSI KERAS 2: CLOUD AI INPAINTING (Hugging Face)
+// ══════════════════════════════════════════════
+async function processCloudAI(
+  sourceCanvas: HTMLCanvasElement,
+  width: number,
+  height: number,
+  token: string,
+  onProgress?: ProgressCallback
+): Promise<{ canvas: HTMLCanvasElement, ctx: CanvasRenderingContext2D }> {
+  onProgress?.(20, 'Menyiapkan mask & mengemas data untuk AI...');
+
+  // Kita hanya akan mengirim area pojok kanan bawah 512x512 agar tidak over-limit API
+  const patchSize = 512;
+  const startX = Math.max(0, width - patchSize);
+  const startY = Math.max(0, height - patchSize);
+  const pw = Math.min(patchSize, width);
+  const ph = Math.min(patchSize, height);
+
+  // Buat kanvas kecil untuk patch gambar
+  const patchCanvas = document.createElement('canvas');
+  patchCanvas.width = pw;
+  patchCanvas.height = ph;
+  const patchCtx = patchCanvas.getContext('2d')!;
+  patchCtx.drawImage(sourceCanvas, startX, startY, pw, ph, 0, 0, pw, ph);
+  const patchBase64 = patchCanvas.toDataURL('image/png').split(',')[1]; // hapus header
+
+  // Buat kanvas mask (Putih di pojok = hapus, Hitam = pertahankan)
+  const maskCanvas = document.createElement('canvas');
+  maskCanvas.width = pw;
+  maskCanvas.height = ph;
+  const maskCtx = maskCanvas.getContext('2d')!;
+  maskCtx.fillStyle = '#000000'; // Hitam
+  maskCtx.fillRect(0, 0, pw, ph);
+  maskCtx.fillStyle = '#FFFFFF'; // Putih untuk target
+  const boxW = Math.floor(width * 0.08);
+  const boxH = Math.floor(height * 0.06);
+  // Lokasikan relatif terhadap patch:
+  maskCtx.fillRect(pw - boxW, ph - boxH, boxW, boxH);
+  const maskBase64 = maskCanvas.toDataURL('image/png').split(',')[1];
+
+  onProgress?.(50, 'Berkomunikasi dengan Hugging Face Cloud (Mungkin butuh 5-15 detik)...');
+
+  // Panggil Hugging Face API Inpainting (Stable Diffusion 2 Inpainting)
+  const apiURL = 'https://api-inference.huggingface.co/models/stabilityai/stable-diffusion-2-inpainting';
+  const response = await fetch(apiURL, {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      inputs: patchBase64, // Image to inpaint
+      parameters: {
+        mask_image: maskBase64, // Mask to guide
+        prompt: "natural seamless background texture mapping",
+        negative_prompt: "watermark, text, signature, star, logo, glitches"
+      }
+    })
+  });
+
+  if (!response.ok) {
+    const errText = await response.text();
+    throw new Error(`API Error ${response.status}: ${errText}`);
+  }
+
+  onProgress?.(80, 'Mendapatkan hasil dari Cloud...');
+
+  const resultBlob = await response.blob();
+  const resultImg = await createImageBitmap(resultBlob);
+
+  onProgress?.(90, 'Menyatukan kembali dengan gambar asli...');
+
+  // Timpa layar asli dengan canvas
+  // Agar kita tidak merusak ori, kita duplikat
+  const newCanvas = document.createElement('canvas');
+  newCanvas.width = width;
+  newCanvas.height = height;
+  const newCtx = newCanvas.getContext('2d')!;
+  
+  // Gambar aslinya
+  newCtx.drawImage(sourceCanvas, 0, 0);
+  // Timpa pojoknya dengan hasil AI
+  newCtx.drawImage(resultImg, startX, startY);
+
+  return { canvas: newCanvas, ctx: newCtx };
+}
 
 // ══════════════════════════════════════════════
 // METHOD 1: Reverse Alpha Compositing

@@ -6,7 +6,9 @@ import { ImageDropzone } from './ImageDropzone';
 import { ImageCompare } from './ImageCompare';
 
 const METHODS: { id: WatermarkMethod; label: string; icon: string; desc: string }[] = [
-  { id: 'gemini-splash', label: 'Gemini Splash (Auto)', icon: '✨', desc: 'Hapus watermark Google Gemini di pojok kanan bawah' },
+  { id: 'cloud-ai', label: 'Cloud AI Inpainting', icon: '☁️', desc: 'Identik watermark.phd (Butuh HF Token)' },
+  { id: 'smart-crop', label: 'Smart Auto-Crop', icon: '✂️', desc: 'Potong paksa area ujung bawah (100% Bersih)' },
+  { id: 'gemini-splash', label: 'Gemini Splash (Math)', icon: '✨', desc: 'Hapus watermark Google Gemini di pojok kanan bawah' },
   { id: 'alpha-composite', label: 'Alpha Compositing', icon: '🔄', desc: 'Reverse formula watermark transparan' },
   { id: 'frequency-perturbation', label: 'Frequency Perturbation', icon: '📊', desc: 'Disrupsi pola frekuensi pixel' },
   { id: 'smart-noise', label: 'Smart Noise', icon: '🎲', desc: 'Noise adaptif terarah' },
@@ -21,6 +23,7 @@ const FORMATS: { id: 'png' | 'jpeg' | 'webp'; label: string }[] = [
 
 export const WatermarkRemover: React.FC = () => {
   const [config, setConfig] = useState<WatermarkConfig>(DEFAULT_WATERMARK_CONFIG);
+  const [hfToken, setHfToken] = useState<string>('');
   const [originalFile, setOriginalFile] = useState<File | null>(null);
   const [originalPreview, setOriginalPreview] = useState<string | null>(null);
   const [processedImage, setProcessedImage] = useState<string | null>(null);
@@ -39,12 +42,18 @@ export const WatermarkRemover: React.FC = () => {
 
   const handleProcess = async () => {
     if (!originalFile) return;
+    
+    if (config.method === 'cloud-ai' && !hfToken) {
+      alert('Mohon masukkan Hugging Face Token untuk fitur Cloud AI.');
+      return;
+    }
+
     setIsProcessing(true);
     setProgress(0);
     setProcessedImage(null);
 
     try {
-      const result = await removeWatermark(originalFile, config, (p, s) => {
+      const result = await removeWatermark(originalFile, config, hfToken, (p, s) => {
         setProgress(p);
         setStatusText(s);
       });
@@ -58,7 +67,7 @@ export const WatermarkRemover: React.FC = () => {
       });
     } catch (err: any) {
       console.error(err);
-      alert('Gagal memproses gambar: ' + err.message);
+      alert('Gagal memproses gambar: ' + (err.message || 'Unknown Error'));
     } finally {
       setIsProcessing(false);
     }
@@ -149,6 +158,35 @@ export const WatermarkRemover: React.FC = () => {
               })}
             </div>
           </div>
+
+          {/* Token Input for Cloud AI */}
+          {config.method === 'cloud-ai' && (
+            <div style={{ marginBottom: '20px' }}>
+              <div className="section-header">
+                <span style={{ color: 'var(--accent-gold)' }}>Hugging Face Token</span>
+              </div>
+              <input
+                type="password"
+                placeholder="hf_xxxxxxxxxxxxxxxxxxx"
+                value={hfToken}
+                onChange={e => setHfToken(e.target.value)}
+                disabled={isProcessing}
+                style={{
+                  width: '100%',
+                  padding: '10px',
+                  background: 'var(--bg-glass)',
+                  border: '1px solid var(--border-subtle)',
+                  borderRadius: 'var(--radius-md)',
+                  color: 'var(--text-primary)',
+                  fontSize: '12px',
+                  fontFamily: 'monospace',
+                }}
+              />
+              <div style={{ fontSize: '10px', color: 'var(--text-tertiary)', marginTop: '4px' }}>
+                Dapatkan token gratis di <a href="https://huggingface.co/settings/tokens" target="_blank" rel="noreferrer" style={{ color: 'var(--accent-emerald)' }}>huggingface.co/settings/tokens</a>
+              </div>
+            </div>
+          )}
 
           {/* Intensity Slider */}
           <div style={{ marginBottom: '20px' }}>
