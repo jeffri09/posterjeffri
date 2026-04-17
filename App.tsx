@@ -66,7 +66,7 @@ const App: React.FC = () => {
       setFormData(prev => ({ ...prev, ...generatedData }));
     } catch (e: any) {
       console.error(e);
-      alert("Gagal membuat konten. Pastikan API Key valid dan memiliki izin.");
+      alert("Gagal membuat konten: " + (e.message || "Pastikan API Key valid dan memiliki izin."));
     } finally {
       setIsGenerating(false);
     }
