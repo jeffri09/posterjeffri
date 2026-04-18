@@ -127,17 +127,31 @@ async function processSmartCrop(
   // Asumsikan default intensity 50% berarti crop 250px.
   // Jika 100%, crop sampai 500px.
   const cropAmount = Math.floor((intensity / 50) * 200); 
+  
+  // 1. Potong area bawah
   const newHeight = Math.max(10, height - cropAmount);
 
+  // 2. Kalkulasi rasio aspek original agar tetap proposional untuk IG (misal 4:5)
+  const aspectRatio = width / height;
+  const newWidth = Math.round(newHeight * aspectRatio);
+  
+  // Potong simetris dari kiri & kanan untuk menyamakan aspect ratio
+  const cropX = width - newWidth;
+  const offsetX = Math.floor(cropX / 2);
+
   const newCanvas = document.createElement('canvas');
-  newCanvas.width = width;
+  newCanvas.width = newWidth;
   newCanvas.height = newHeight;
   const newCtx = newCanvas.getContext('2d')!;
 
-  // Gambar ulang tetapi hanya potong bagian atas hingga newHeight
-  newCtx.drawImage(sourceCanvas, 0, 0, width, newHeight, 0, 0, width, newHeight);
+  // Gambar ulang menggunakan seleksi proporsional agar aspect ratio tetap utuh
+  newCtx.drawImage(
+    sourceCanvas, 
+    offsetX, 0, newWidth, newHeight, 
+    0, 0, newWidth, newHeight
+  );
 
-  onProgress?.(100, `Cropping selesai (-${cropAmount}px)`);
+  onProgress?.(100, `Cropping selesai (-${cropAmount}px, Aspect Ratio Dipertahankan)`);
   return { canvas: newCanvas, ctx: newCtx };
 }
 
