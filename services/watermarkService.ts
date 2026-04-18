@@ -166,7 +166,11 @@ async function processCloudAI(
   patchCanvas.height = ph;
   const patchCtx = patchCanvas.getContext('2d')!;
   patchCtx.drawImage(sourceCanvas, startX, startY, pw, ph, 0, 0, pw, ph);
-  const patchBase64 = patchCanvas.toDataURL('image/png').split(',')[1]; // hapus header
+  
+  // Konversi ke format Blob binary (Wajib untuk API Hugging Face)
+  const patchBlob = await new Promise<Blob>((resolve, reject) => {
+    patchCanvas.toBlob((b) => b ? resolve(b) : reject('Gagal membuat blob gambar'), 'image/png');
+  });
 
   // Buat kanvas mask (Putih di pojok = hapus, Hitam = pertahankan)
   const maskCanvas = document.createElement('canvas');
@@ -178,33 +182,35 @@ async function processCloudAI(
   maskCtx.fillStyle = '#FFFFFF'; // Putih untuk target
   const boxW = Math.floor(width * 0.08);
   const boxH = Math.floor(height * 0.06);
-  // Lokasikan relatif terhadap patch:
   maskCtx.fillRect(pw - boxW, ph - boxH, boxW, boxH);
-  const maskBase64 = maskCanvas.toDataURL('image/png').split(',')[1];
+  
+  const maskBlob = await new Promise<Blob>((resolve, reject) => {
+    maskCanvas.toBlob((b) => b ? resolve(b) : reject('Gagal membuat mask blob'), 'image/png');
+  });
 
   onProgress?.(50, 'Berkomunikasi dengan Hugging Face Cloud (Mungkin butuh 5-15 detik)...');
 
-  // Panggil Hugging Face API Inpainting (Stable Diffusion 2 Inpainting)
-  const apiURL = 'https://api-inference.huggingface.co/models/stabilityai/stable-diffusion-2-inpainting';
+  // Siapkan objek FormData 
+  const formData = new FormData();
+  formData.append('image', patchBlob, 'image.png');
+  formData.append('mask_image', maskBlob, 'mask.png');
+  formData.append('inputs', 'natural seamless background texture mapping, professional design');
+
+  // Panggil Hugging Face API Inpainting standar
+  const apiURL = 'https://api-inference.huggingface.co/models/runwayml/stable-diffusion-inpainting';
   const response = await fetch(apiURL, {
     method: 'POST',
     headers: {
-      'Authorization': `Bearer ${token}`,
-      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`
+      // Jangan set Content-Type secara manual, biarkan browser menyetel multipart/form-data & boundary
     },
-    body: JSON.stringify({
-      inputs: patchBase64, // Image to inpaint
-      parameters: {
-        mask_image: maskBase64, // Mask to guide
-        prompt: "natural seamless background texture mapping",
-        negative_prompt: "watermark, text, signature, star, logo, glitches"
-      }
-    })
+    body: formData
   });
 
   if (!response.ok) {
-    const errText = await response.text();
-    throw new Error(`API Error ${response.status}: ${errText}`);
+    let errText = '';
+    try { errText = await response.text(); } catch(e) {}
+    throw new Error(`API Error ${response.status}: Server HuggingFace menolak. Biasanya karena format token salah atau server penuh. Coba gunakan SMART AUTO-CROP. ${errText}`);
   }
 
   onProgress?.(80, 'Mendapatkan hasil dari Cloud...');
@@ -215,15 +221,12 @@ async function processCloudAI(
   onProgress?.(90, 'Menyatukan kembali dengan gambar asli...');
 
   // Timpa layar asli dengan canvas
-  // Agar kita tidak merusak ori, kita duplikat
   const newCanvas = document.createElement('canvas');
   newCanvas.width = width;
   newCanvas.height = height;
   const newCtx = newCanvas.getContext('2d')!;
   
-  // Gambar aslinya
   newCtx.drawImage(sourceCanvas, 0, 0);
-  // Timpa pojoknya dengan hasil AI
   newCtx.drawImage(resultImg, startX, startY);
 
   return { canvas: newCanvas, ctx: newCtx };

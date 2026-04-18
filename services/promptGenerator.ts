@@ -60,9 +60,11 @@ LAYOUT ZONES
 │  [Zone B] Konten Utama  55%  │
 │  Headline + Narasi + Dalil   │
 ├──────────────────────────────┤
-│  [Zone C] Visual Accent  25% │
+│  [Zone C] Visual Accent  15% │
 ├──────────────────────────────┤
-│  [Zone D] Footer Strip  10%  │
+│  [Zone D] Footer Teks    5%  │
+├──────────────────────────────┤
+│  [Zone E] Safe Margin    15% │
 └──────────────────────────────┘
 MARGIN: Minimal 120px semua sisi.
 
@@ -87,15 +89,16 @@ ${d(data.visualContext, "Visual yang sesuai dengan topik poster — desain profe
 ════════════════════════════════════
 FOOTER (WAJIB)
 ════════════════════════════════════
-Strip putih horizontal, full width, paling bawah (SEBELUM frame hitam).
-Warna teks: Biru Tua (#0E2F73)
+Posisi: Naikkan 300px dari garis paling bawah gambar.
+Desain: TANPA strip putih/blok warna. Teks harus menyatu elegan (full-bleed) dengan background poster.
+Warna teks: Kontras dengan background (terang di bg gelap, gelap di bg terang).
 Konten: [IG] @kuncikebaikantv | [FB] Yayasan Kunci Kebaikan OKU Timur | [Web] www.kuncikebaikan.com
 
 ════════════════════════════════════
-SACRIFICIAL PADDING (ATURAN MESIN MUTLAK)
+SACRIFICIAL PADDING (AREA AMAN POTONGAN)
 ════════════════════════════════════
-Anda WAJIB menambahkan sebuah FRAME HALAMAN HITAM POLOS (Solid Black) setebal 250px di bawah Footer.
-Bagian terbawah gambar ini murni hitam tak berisi apa-apa, digunakan sebagai area buangan (sacrificial margin).`;
+Area 300px di bagian PALING BAWAH gambar WAJIB berupa RUANG KOSONG (negative space) yang menyatu dengan tema background visual poster.
+DILARANG meletakkan teks, logo, atau objek penting di area 300px terbawah ini, karena akan otomatis terpotong (auto-crop) oleh sistem.`;
 };
 
 /**
