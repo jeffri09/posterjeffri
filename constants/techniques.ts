@@ -216,15 +216,10 @@ export const TECHNIQUES: PromptTechnique[] = [
 
 // --- Preset Mappings ---
 export const PRESET_TECHNIQUE_IDS: Record<string, string[]> = {
-  quick: ['role-context', 'instruction', 'zero-shot'],
-  standard: ['role-context', 'cot', 'instruction', 'few-shot', 'directional-stimulus', 'self-consistency', 'rag', 'active-prompt'],
-  advanced: [
-    'role-context', 'cot', 'tot', 'instruction', 'few-shot', 'scamper',
-    'directional-stimulus', 'self-consistency', 'rag', 'reflexion',
-    'generate-knowledge', 'meta-prompting', 'skeleton-of-thought',
-    'least-to-most', 'active-prompt',
-  ],
-  maximum: TECHNIQUES.map(t => t.id),
+  quick: ['instruction'],
+  standard: ['role-context', 'instruction'],
+  advanced: ['role-context', 'instruction', 'directional-stimulus'],
+  maximum: ['role-context', 'instruction', 'directional-stimulus', 'scamper'],
 };
 
 // --- Category Labels ---

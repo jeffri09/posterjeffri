@@ -54,18 +54,10 @@ TIPOGRAFI:
 ════════════════════════════════════
 LAYOUT ZONES
 ════════════════════════════════════
-┌──────────────────────────────┐
-│  [Zone A] Logo + Margin 10%  │
-├──────────────────────────────┤
-│  [Zone B] Konten Utama  55%  │
-│  Headline + Narasi + Dalil   │
-├──────────────────────────────┤
-│  [Zone C] Visual Accent  15% │
-├──────────────────────────────┤
-│  [Zone D] Footer Teks    5%  │
-├──────────────────────────────┤
-│  [Zone E] Safe Margin    15% │
-└──────────────────────────────┘
+- [Top] Logo + Margin
+- [Center] Konten Utama (Headline + Narasi + Dalil)
+- [Bottom] Footer Teks
+- [Paling Bawah] Safe Margin Kosong 200px
 MARGIN: Minimal 120px semua sisi.
 
 ════════════════════════════════════
@@ -92,7 +84,8 @@ FOOTER (WAJIB)
 Posisi: Naikkan tepat 200px dari garis paling bawah gambar (jangan lebih).
 Desain: Teks diletakkan natural tanpa blok/strip background kaku.
 Warna teks: Kontras dengan background (terang di bg gelap, gelap di bg terang).
-Konten: [IG] @kuncikebaikantv | [FB] Yayasan Kunci Kebaikan OKU Timur | [Web] www.kuncikebaikan.com
+Konten: (Ikon Grafis Logo Asli Instagram) @kuncikebaikantv  |  (Ikon Grafis Logo Asli Facebook) Yayasan Kunci Kebaikan OKU Timur  |  (Ikon Grafis Website/Globe) www.kuncikebaikan.com
+PENTING: Jangan tampilkan tulisan mentah seperti "[IG]"! Wajib gambarkan/render ikon logo visual secara grafis.
 
 ════════════════════════════════════
 SACRIFICIAL PADDING (AREA AMAN POTONGAN)
