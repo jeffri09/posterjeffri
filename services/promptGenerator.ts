@@ -89,16 +89,16 @@ ${d(data.visualContext, "Visual yang sesuai dengan topik poster — desain profe
 ════════════════════════════════════
 FOOTER (WAJIB)
 ════════════════════════════════════
-Posisi: Naikkan 300px dari garis paling bawah gambar.
-Desain: TANPA strip putih/blok warna. Teks harus menyatu elegan (full-bleed) dengan background poster.
+Posisi: Naikkan tepat 200px dari garis paling bawah gambar (jangan lebih).
+Desain: Teks diletakkan natural tanpa blok/strip background kaku.
 Warna teks: Kontras dengan background (terang di bg gelap, gelap di bg terang).
 Konten: [IG] @kuncikebaikantv | [FB] Yayasan Kunci Kebaikan OKU Timur | [Web] www.kuncikebaikan.com
 
 ════════════════════════════════════
 SACRIFICIAL PADDING (AREA AMAN POTONGAN)
 ════════════════════════════════════
-Area 300px di bagian PALING BAWAH gambar WAJIB berupa RUANG KOSONG (negative space) yang menyatu dengan tema background visual poster.
-DILARANG meletakkan teks, logo, atau objek penting di area 300px terbawah ini, karena akan otomatis terpotong (auto-crop) oleh sistem.`;
+Margin 200px di bagian PALING BAWAH gambar WAJIB berupa RUANG KOSONG (negative space) yang menyatu dengan tema background visual poster.
+Area 200px ini bersifat SACRIFICIAL, artinya mesin akan otomatis memotongnya 100%. Pastikan Footer diletakkan persis menempel di atas batas 200px ini, sehingga saat dipotong, footer menjadi passokan terbawah.`;
 };
 
 /**
