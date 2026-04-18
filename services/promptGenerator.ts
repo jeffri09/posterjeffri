@@ -21,6 +21,7 @@ ATURAN MUTLAK
    - Wajah realistis, foto manusia/hewan realistis
    - Simbol agama selain Islam
    - Teks selain yang tertera dalam hierarki konten
+   - MENCETAK LABEL INSTRUKSI KAMI KE DALAM POSTER! Dilarang keras menuliskan kata "HEADLINE:", "NASIHAT:", "DALIL:", "Arab:", "Terjemahan:", "FOOTER", maupun "SACRIFICIAL PADDING ZONE" di kanvas. Cukup cetak isi/naskah pesannya saja!
 
 ⚠️ ATURAN MAKHLUK BERNYAWA:
    - BOLEH menampilkan manusia/hewan dalam gaya KARTUN TANPA WAJAH
