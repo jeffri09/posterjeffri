@@ -39,7 +39,7 @@ ATURAN MUTLAK
 LOGO & SPESIFIKASI TEKNIS
 ════════════════════════════════════
 Logo: logo.png — Pojok kanan atas, proporsional
-Resolusi: 3280 x 4096 pixel (4:5 Portrait)
+Resolusi: 1080 x 1500 pixel (Custom aspect ratio: Sengaja dibuat lebih tinggi dari 4:5. Tujuannya agar setelah dipotong / dicrop area bawahnya sebanyak 300px, hasil akhirnya akan menjadi presisi rasio murni 4:5 Portrait untuk Instagram Feed tanpa cacat rasio).
 Kualitas: High resolution, professional lighting
 Style: Premium & modern — desain mendukung penyampaian pesan dakwah
 
