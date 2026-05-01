@@ -21,7 +21,7 @@ ATURAN MUTLAK
    - Wajah realistis, foto manusia/hewan realistis
    - Simbol agama selain Islam
    - Teks selain yang tertera dalam hierarki konten
-   - MENCETAK LABEL INSTRUKSI KAMI KE DALAM POSTER! Dilarang keras menuliskan kata "HEADLINE:", "NASIHAT:", "DALIL:", "Arab:", "Terjemahan:", "FOOTER", maupun "SACRIFICIAL PADDING ZONE" di kanvas. Cukup cetak isi/naskah pesannya saja!
+   - MENCETAK LABEL INSTRUKSI KAMI KE DALAM POSTER! Dilarang keras menuliskan kata "HEADLINE:", "NASIHAT:", "DALIL:", "Arab:", "Terjemahan:", maupun "FOOTER" di kanvas. Cukup cetak isi/naskah pesannya saja!
 
 ⚠️ ATURAN MAKHLUK BERNYAWA:
    - BOLEH menampilkan manusia/hewan dalam gaya KARTUN TANPA WAJAH
@@ -40,7 +40,7 @@ ATURAN MUTLAK
 LOGO & SPESIFIKASI TEKNIS
 ════════════════════════════════════
 Logo: logo.png — Pojok kanan atas, proporsional
-Resolusi: 3280 x 4300 pixel (4K Custom aspect ratio: Dibuat sengaja lebih memanjang ke bawah. Tujuannya agar setelah auto-crop membuang pengorbanan margin bawahnya, gambar akan tersisa tebal menjadi ukuran 4K 3280 x 4100 pixel dengan murni rasio ideal 4:5 standar Instagram).
+Resolusi: 3280 x 4100 pixel (4K, rasio 4:5 standar Instagram).
 Kualitas: Ultra HD 4K, high resolution, professional lighting
 Style: Premium & modern — desain mendukung penyampaian pesan dakwah
 
@@ -58,7 +58,6 @@ LAYOUT ZONES
 - [Top] Logo + Margin
 - [Center] Konten Utama (Headline + Narasi + Dalil)
 - [Bottom] Footer Teks
-- [Paling Bawah] Safe Margin Kosong 200px
 MARGIN: Minimal 120px semua sisi.
 
 ════════════════════════════════════
@@ -82,17 +81,11 @@ ${d(data.visualContext, "Visual yang sesuai dengan topik poster — desain profe
 ════════════════════════════════════
 FOOTER (WAJIB)
 ════════════════════════════════════
-Posisi: Naikkan tepat 200px dari garis paling bawah gambar (jangan lebih).
+Posisi: Di bagian paling bawah poster, dengan margin bawah minimal 40-60px dari tepi gambar.
 Desain: Teks diletakkan natural tanpa blok/strip background kaku.
 Warna teks: Kontras dengan background (terang di bg gelap, gelap di bg terang).
 Konten: (Ikon Grafis Logo Asli Instagram) @kuncikebaikantv  |  (Ikon Grafis Logo Asli Facebook) Yayasan Kunci Kebaikan OKU Timur  |  (Ikon Grafis Website/Globe) www.kuncikebaikan.com
-PENTING: Jangan tampilkan tulisan mentah seperti "[IG]"! Wajib gambarkan/render ikon logo visual secara grafis.
-
-════════════════════════════════════
-SACRIFICIAL PADDING (AREA AMAN POTONGAN)
-════════════════════════════════════
-Margin 200px di bagian PALING BAWAH gambar WAJIB berupa RUANG KOSONG (negative space) yang menyatu dengan tema background visual poster.
-Area 200px ini bersifat SACRIFICIAL, artinya mesin akan otomatis memotongnya 100%. Pastikan Footer diletakkan persis menempel di atas batas 200px ini, sehingga saat dipotong, footer menjadi passokan terbawah.`;
+PENTING: Jangan tampilkan tulisan mentah seperti "[IG]"! Wajib gambarkan/render ikon logo visual secara grafis.`;
 };
 
 /**

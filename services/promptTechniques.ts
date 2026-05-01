@@ -376,15 +376,15 @@ export const techniquePAL = (data: PosterFormData): string => `
 ═══ PAL — Kalkulasi Programatis ═══
 HITUNG secara presisi:
 
-CANVAS: 3280 × 4096 px (4:5 Portrait)
+CANVAS: 3280 × 4100 px (4:5 Portrait)
 MARGIN: 120px semua sisi
-USABLE AREA: 3040 × 3856 px
+USABLE AREA: 3040 × 3860 px
 
 ZONE CALCULATIONS:
 ├── Zone A (Logo): 3040 × 386px (10% tinggi) → Y: 120 to 506
-├── Zone B (Konten): 3040 × 2121px (55% tinggi) → Y: 506 to 2627
-├── Zone C (Visual): 3040 × 964px (25% tinggi) → Y: 2627 to 3591
-└── Zone D (Footer): 3040 × 386px (10% tinggi) → Y: 3591 to 3976
+├── Zone B (Konten): 3040 × 2123px (55% tinggi) → Y: 506 to 2629
+├── Zone C (Visual): 3040 × 965px (25% tinggi) → Y: 2629 to 3594
+└── Zone D (Footer): 3040 × 386px (10% tinggi) → Y: 3594 to 3980
 
 FONT SIZE RATIOS:
 ├── Headline: ~120-160pt (dominan)
@@ -415,7 +415,7 @@ export const techniqueActivePrompt = (data: PosterFormData): string => `
 → TIDAK ADA musik, instrumen, atau elemen hiburan
 
 🟢 PERHATIKAN — Kualitas Visual:
-→ Resolusi HARUS 3280×4096px
+→ Resolusi HARUS 3280×4100px
 → Tekstur harus hyper-realistic, bukan flat/cartoon
 → Pencahayaan harus natural dan professional`;
 

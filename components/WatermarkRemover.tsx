@@ -7,7 +7,6 @@ import { ImageCompare } from './ImageCompare';
 
 const METHODS: { id: WatermarkMethod; label: string; icon: string; desc: string }[] = [
   { id: 'cloud-ai', label: 'Cloud AI Inpainting', icon: '☁️', desc: 'Identik watermark.phd (Butuh HF Token)' },
-  { id: 'smart-crop', label: 'Smart Auto-Crop', icon: '✂️', desc: 'Potong paksa area ujung bawah (100% Bersih)' },
   { id: 'gemini-splash', label: 'Gemini Splash (Math)', icon: '✨', desc: 'Hapus watermark Google Gemini di pojok kanan bawah' },
   { id: 'alpha-composite', label: 'Alpha Compositing', icon: '🔄', desc: 'Reverse formula watermark transparan' },
   { id: 'frequency-perturbation', label: 'Frequency Perturbation', icon: '📊', desc: 'Disrupsi pola frekuensi pixel' },

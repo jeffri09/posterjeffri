@@ -58,15 +58,7 @@ export const removeWatermark = async (
       height = finalCanvas.height;
       isNewCanvas = true;
       break;
-    case 'smart-crop':
-      // Memotong bagian 250px bawah (atau sesuai intensity)
-      const resCrop = await processSmartCrop(canvas, width, height, config.intensity, onProgress);
-      finalCanvas = resCrop.canvas;
-      finalCtx = resCrop.ctx;
-      width = finalCanvas.width;
-      height = finalCanvas.height;
-      isNewCanvas = true;
-      break;
+
     case 'gemini-splash':
       await processGeminiSplash(imageData, width, height, onProgress);
       break;
@@ -112,34 +104,7 @@ export const removeWatermark = async (
   };
 };
 
-// ══════════════════════════════════════════════
-// OPSI KERAS 1: SMART AUTO-CROP
-// ══════════════════════════════════════════════
-async function processSmartCrop(
-  sourceCanvas: HTMLCanvasElement,
-  width: number,
-  height: number,
-  intensity: number,
-  onProgress?: ProgressCallback
-): Promise<{ canvas: HTMLCanvasElement, ctx: CanvasRenderingContext2D }> {
-  onProgress?.(50, 'Memotong frame pengorbanan di ujung bawah...');
-  
-  // Asumsikan default intensity 50% berarti crop 250px.
-  // Jika 100%, crop sampai 500px.
-  const cropAmount = Math.floor((intensity / 50) * 200); 
-  const newHeight = Math.max(10, height - cropAmount);
 
-  const newCanvas = document.createElement('canvas');
-  newCanvas.width = width;
-  newCanvas.height = newHeight;
-  const newCtx = newCanvas.getContext('2d')!;
-
-  // Gambar ulang tetapi hanya potong bagian atas hingga newHeight
-  newCtx.drawImage(sourceCanvas, 0, 0, width, newHeight, 0, 0, width, newHeight);
-
-  onProgress?.(100, `Cropping selesai (-${cropAmount}px)`);
-  return { canvas: newCanvas, ctx: newCtx };
-}
 
 // ══════════════════════════════════════════════
 // OPSI KERAS 2: CLOUD AI INPAINTING (Hugging Face)

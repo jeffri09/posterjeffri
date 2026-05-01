@@ -45,13 +45,12 @@ export const INITIAL_FORM_DATA: PosterFormData = {
 
 // --- Watermark Types ---
 export type WatermarkMethod = 
-  | 'smart-crop'
   | 'gemini-splash' 
   | 'cloud-ai'
-  | 'blur' 
-  | 'pixelate' 
-  | 'solid' 
   | 'alpha-composite' 
+  | 'frequency-perturbation'
+  | 'smart-noise'
+  | 'combined'
   | 'advanced-inpaint';
 
 export interface WatermarkConfig {
