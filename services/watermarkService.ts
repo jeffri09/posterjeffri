@@ -124,9 +124,8 @@ async function processNanobanana(
   onProgress?.(25, 'Menganalisis anomali piksel (Watermark Nanobanana)...');
   const { data } = imageData;
 
-  // Area umum untuk watermark Nanobanana (Pojok kiri bawah & kanan bawah)
-  const boxWidth = Math.min(Math.floor(width * 0.15), 350);
-  const boxHeight = Math.min(Math.floor(height * 0.08), 120);
+  // Memperlebar area pemindaian menjadi seluruh bagian bawah 15% dari tinggi gambar
+  const boxHeight = Math.min(Math.floor(height * 0.15), 200);
   
   const startY = height - boxHeight;
   if (startY < 0) return;
@@ -139,7 +138,7 @@ async function processNanobanana(
   const histG = new Int32Array(256);
   const histB = new Int32Array(256);
 
-  const processArea = (startX: number, endX: number) => {
+  const processArea = async (startX: number, endX: number) => {
     for (let y = startY; y < height; y++) {
       for (let x = startX; x < endX; x++) {
         histR.fill(0);
@@ -182,22 +181,31 @@ async function processNanobanana(
         const diffB = Math.abs(origB - medB);
         const diffTotal = diffR + diffG + diffB;
 
-        // Jika warnanya sangat kontras dibanding median (teks/logo watermark), kita timpa
-        if (diffTotal > 50) {
-          const blend = clamp((diffTotal - 50) / 40, 0, 1);
-          data[targetIdx] = clamp(Math.round(origR * (1 - blend) + medR * blend), 0, 255);
-          data[targetIdx + 1] = clamp(Math.round(origG * (1 - blend) + medG * blend), 0, 255);
-          data[targetIdx + 2] = clamp(Math.round(origB * (1 - blend) + medB * blend), 0, 255);
+        // Hitung luminansi untuk sensitivitas tambahan terhadap watermark
+        const lumOrig = origR * 0.299 + origG * 0.587 + origB * 0.114;
+        const lumMed = medR * 0.299 + medG * 0.587 + medB * 0.114;
+        const lumDiff = Math.abs(lumOrig - lumMed);
+
+        // Threshold diturunkan dan dipadukan dengan Luma diff agar sensitif ke watermark semi-transparan
+        if (lumDiff > 12 || diffTotal > 30) {
+          const blendStrength = clamp((Math.max(lumDiff, diffTotal/3) - 8) / 20, 0, 1);
+          data[targetIdx] = clamp(Math.round(origR * (1 - blendStrength) + medR * blendStrength), 0, 255);
+          data[targetIdx + 1] = clamp(Math.round(origG * (1 - blendStrength) + medG * blendStrength), 0, 255);
+          data[targetIdx + 2] = clamp(Math.round(origB * (1 - blendStrength) + medB * blendStrength), 0, 255);
         }
+      }
+      
+      // Progress reporting & UI Yielding
+      if (y % 10 === 0) {
+        const prog = 50 + Math.floor(((y - startY) / boxHeight) * 40);
+        onProgress?.(prog, 'Menganalisis dan menambal area bawah...');
+        await new Promise(r => setTimeout(r, 0)); // Mencegah UI freeze
       }
     }
   };
 
-  // Proses Pojok Kiri Bawah
-  processArea(0, boxWidth);
-  onProgress?.(70, 'Memproses area selanjutnya...');
-  // Proses Pojok Kanan Bawah
-  processArea(width - boxWidth, width);
+  // Proses Seluruh Lebar Bagian Bawah
+  await processArea(0, width);
 
   onProgress?.(90, 'Memperhalus hasil penambalan...');
 }
@@ -600,10 +608,11 @@ async function processGeminiSplash(
       }
     }
     
-    // Kirim progress bar palsu agar user tidak mengira macet
+    // Kirim progress bar palsu agar user tidak mengira macet & yield ke main thread
     if (y % 15 === 0) {
       const prog = 50 + Math.floor(((y - startY) / boxHeight) * 35);
       onProgress?.(prog, 'Menghancurkan watermark... ' + prog + '%');
+      await new Promise(r => setTimeout(r, 0)); // Mencegah UI freeze
     }
   }
 

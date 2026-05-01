@@ -396,9 +396,19 @@ const App: React.FC = () => {
             </div>
 
             {/* Prompt Output */}
-            <div className="prompt-output" style={{ flex: 1, overflow: 'auto' }}>
-              {generatedPrompt}
-            </div>
+            <div 
+              className="prompt-output" 
+              style={{ flex: 1, overflow: 'auto' }}
+              dangerouslySetInnerHTML={{
+                __html: generatedPrompt
+                  .replace(/</g, '&lt;')
+                  .replace(/>/g, '&gt;')
+                  .replace(/\*\*(.*?)\*\*/g, '<strong style="color: var(--accent-emerald)">$1</strong>')
+                  .replace(/(════════════════════════════════════\n)([A-Z &]+)(\n════════════════════════════════════)/g, '<span style="color: var(--accent-gold)">$1<strong>$2</strong>$3</span>')
+                  .replace(/(═══.*?═══)/g, '<strong style="color: var(--accent-gold)">$1</strong>')
+                  .replace(/\[(.*?)\]/g, '<span style="color: var(--accent-purple)">[$1]</span>')
+              }}
+            />
 
             {/* Bottom Tips */}
             <div style={{
