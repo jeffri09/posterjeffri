@@ -49,6 +49,10 @@ export const removeWatermark = async (
   let isNewCanvas = false;
 
   switch (config.method) {
+    case 'nanobanana':
+      await processNanobanana(imageData, width, height, onProgress);
+      break;
+
     case 'cloud-ai':
       if (!hfToken) throw new Error('Hugging Face Token is required for Cloud AI Inpainting.');
       const resAI = await processCloudAI(canvas, width, height, hfToken, onProgress);
@@ -105,6 +109,98 @@ export const removeWatermark = async (
 };
 
 
+
+// ══════════════════════════════════════════════
+// METHOD: NANOBANANA (Smart Median Patch)
+// Menarget area watermark nanobanana (teks/logo di pojok bawah)
+// ══════════════════════════════════════════════
+
+async function processNanobanana(
+  imageData: ImageData,
+  width: number,
+  height: number,
+  onProgress?: ProgressCallback
+): Promise<void> {
+  onProgress?.(25, 'Menganalisis anomali piksel (Watermark Nanobanana)...');
+  const { data } = imageData;
+
+  // Area umum untuk watermark Nanobanana (Pojok kiri bawah & kanan bawah)
+  const boxWidth = Math.min(Math.floor(width * 0.15), 350);
+  const boxHeight = Math.min(Math.floor(height * 0.08), 120);
+  
+  const startY = height - boxHeight;
+  if (startY < 0) return;
+
+  onProgress?.(50, 'Menjalankan Smart Median Patch...');
+
+  const originalData = new Uint8ClampedArray(data);
+  const radius = 8;
+  const histR = new Int32Array(256);
+  const histG = new Int32Array(256);
+  const histB = new Int32Array(256);
+
+  const processArea = (startX: number, endX: number) => {
+    for (let y = startY; y < height; y++) {
+      for (let x = startX; x < endX; x++) {
+        histR.fill(0);
+        histG.fill(0);
+        histB.fill(0);
+        let totalPixels = 0;
+
+        for (let wy = -radius; wy <= radius; wy++) {
+          for (let wx = -radius; wx <= radius; wx++) {
+            const nx = x + wx;
+            const ny = y + wy;
+            if (nx >= 0 && nx < width && ny >= 0 && ny < height) {
+              const nIdx = (ny * width + nx) * 4;
+              histR[originalData[nIdx]]++;
+              histG[originalData[nIdx + 1]]++;
+              histB[originalData[nIdx + 2]]++;
+              totalPixels++;
+            }
+          }
+        }
+
+        const targetHalf = totalPixels / 2;
+        let countR = 0, medR = 0;
+        for (let i = 0; i < 256; i++) { countR += histR[i]; if (countR >= targetHalf) { medR = i; break; } }
+        
+        let countG = 0, medG = 0;
+        for (let i = 0; i < 256; i++) { countG += histG[i]; if (countG >= targetHalf) { medG = i; break; } }
+        
+        let countB = 0, medB = 0;
+        for (let i = 0; i < 256; i++) { countB += histB[i]; if (countB >= targetHalf) { medB = i; break; } }
+
+        const targetIdx = (y * width + x) * 4;
+        const origR = originalData[targetIdx];
+        const origG = originalData[targetIdx + 1];
+        const origB = originalData[targetIdx + 2];
+
+        // Hitung selisih warna piksel asli dengan median sekitarnya
+        const diffR = Math.abs(origR - medR);
+        const diffG = Math.abs(origG - medG);
+        const diffB = Math.abs(origB - medB);
+        const diffTotal = diffR + diffG + diffB;
+
+        // Jika warnanya sangat kontras dibanding median (teks/logo watermark), kita timpa
+        if (diffTotal > 50) {
+          const blend = clamp((diffTotal - 50) / 40, 0, 1);
+          data[targetIdx] = clamp(Math.round(origR * (1 - blend) + medR * blend), 0, 255);
+          data[targetIdx + 1] = clamp(Math.round(origG * (1 - blend) + medG * blend), 0, 255);
+          data[targetIdx + 2] = clamp(Math.round(origB * (1 - blend) + medB * blend), 0, 255);
+        }
+      }
+    }
+  };
+
+  // Proses Pojok Kiri Bawah
+  processArea(0, boxWidth);
+  onProgress?.(70, 'Memproses area selanjutnya...');
+  // Proses Pojok Kanan Bawah
+  processArea(width - boxWidth, width);
+
+  onProgress?.(90, 'Memperhalus hasil penambalan...');
+}
 
 // ══════════════════════════════════════════════
 // OPSI KERAS 2: CLOUD AI INPAINTING (Hugging Face)

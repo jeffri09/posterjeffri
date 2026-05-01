@@ -3,7 +3,7 @@
 // ═══════════════════════════════════════
 
 // --- App Navigation ---
-export type AppTab = 'generator' | 'watermark';
+export type AppTab = 'generator' | 'watermark' | 'settings';
 
 // --- Poster Category ---
 export type PosterCategory = 'dakwah';
@@ -46,6 +46,7 @@ export const INITIAL_FORM_DATA: PosterFormData = {
 // --- Watermark Types ---
 export type WatermarkMethod = 
   | 'gemini-splash' 
+  | 'nanobanana'
   | 'cloud-ai'
   | 'alpha-composite' 
   | 'frequency-perturbation'

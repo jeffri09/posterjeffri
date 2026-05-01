@@ -13,6 +13,7 @@ import { TabNavigation } from './components/TabNavigation';
 import { TechniqueSelector } from './components/TechniqueSelector';
 import { WatermarkRemover } from './components/WatermarkRemover';
 import { InputGroup } from './components/InputGroup';
+import { Settings } from './components/Settings';
 
 const App: React.FC = () => {
   // --- App State ---
@@ -436,10 +437,15 @@ const App: React.FC = () => {
           </div>
         </div>
 
-      ) : (
+      ) : activeTab === 'watermark' ? (
         /* ═══ WATERMARK REMOVER TAB ═══ */
         <div style={{ flex: 1, overflow: 'hidden' }}>
           <WatermarkRemover />
+        </div>
+      ) : (
+        /* ═══ SETTINGS TAB ═══ */
+        <div style={{ flex: 1, overflow: 'auto', background: 'var(--bg-primary)' }}>
+          <Settings />
         </div>
       )}
     </div>

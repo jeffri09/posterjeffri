@@ -6,6 +6,7 @@ import { ImageDropzone } from './ImageDropzone';
 import { ImageCompare } from './ImageCompare';
 
 const METHODS: { id: WatermarkMethod; label: string; icon: string; desc: string }[] = [
+  { id: 'nanobanana', label: 'Nanobanana (Smart Patch)', icon: '🍌', desc: 'Hapus watermark teks Nanobanana dengan cerdas' },
   { id: 'cloud-ai', label: 'Cloud AI Inpainting', icon: '☁️', desc: 'Identik watermark.phd (Butuh HF Token)' },
   { id: 'gemini-splash', label: 'Gemini Splash (Math)', icon: '✨', desc: 'Hapus watermark Google Gemini di pojok kanan bawah' },
   { id: 'alpha-composite', label: 'Alpha Compositing', icon: '🔄', desc: 'Reverse formula watermark transparan' },

@@ -10,6 +10,7 @@ export const TabNavigation: React.FC<TabNavigationProps> = ({ activeTab, onTabCh
   const tabs: { id: AppTab; label: string; icon: string }[] = [
     { id: 'generator', label: 'Prompt Generator', icon: '✨' },
     { id: 'watermark', label: 'Watermark Remover', icon: '🧹' },
+    { id: 'settings', label: 'Pengaturan', icon: '⚙️' },
   ];
 
   return (
