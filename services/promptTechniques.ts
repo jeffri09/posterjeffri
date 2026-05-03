@@ -28,11 +28,11 @@ LANGKAH 1 — ANALISIS TOPIK:
 → Siapa yang paling membutuhkan pesan ini?
 → Emosi apa yang ingin dibangkitkan? (Takut? Harap? Syukur? Taubat?)
 
-LANGKAH 2 — SELEKSI DALIL (Manhaj Salaf):
-→ PERTAMA: Cari Ayat Al-Qur'an yang paling relevan dan kuat
-→ KEDUA: Jika perlu penguatan, cari Hadits SHAHIH (Bukhari/Muslim prioritas)
-→ KETIGA: Pastikan terjemahan sesuai tafsir mu'tabar (Ibnu Katsir, As-Sa'di, Ath-Thabari)
-→ KEEMPAT: Verifikasi tidak ada penafsiran yang menyimpang dari manhaj Salaf
+LANGKAH 2 — SELEKSI DALIL (Manhaj Salaf SANGAT KETAT):
+→ PERTAMA: WAJIB utamakan Ayat Al-Qur'an yang paling relevan
+→ KEDUA: Jika Hadits, WAJIB Hadits SHAHIH (seperti riwayat Bukhari/Muslim)
+→ KETIGA: Terjemahan WAJIB sesuai pemahaman manhaj salaf atau ulama manhaj salaf seperti Ibnu Katsir
+→ KEEMPAT: Tuliskan referensi/sumber dalil dengan jelas di akhir terjemahan (contoh: "... hingga ia berwudhu. (HR. Bukhari & Muslim)")
 
 LANGKAH 3 — FORMULASI PESAN:
 → Judul: Buat HOOK emosional dalam ≤5 kata
