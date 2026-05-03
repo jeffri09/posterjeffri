@@ -3,13 +3,13 @@ import { GoogleGenAI } from '@google/genai';
 
 export const Settings: React.FC = () => {
   const [apiKey, setApiKey] = useState('');
-  const [model, setModel] = useState('gemini-3.1-flash-lite');
+  const [model, setModel] = useState('gemini-3.1-flash-lite-preview');
   const [isSaved, setIsSaved] = useState(false);
   const [testResult, setTestResult] = useState<{ status: 'idle' | 'testing' | 'success' | 'error', message: string }>({ status: 'idle', message: '' });
 
   useEffect(() => {
     const savedKey = localStorage.getItem('geminiApiKey') || '';
-    const savedModel = localStorage.getItem('geminiModel') || 'gemini-3.1-flash-lite';
+    const savedModel = localStorage.getItem('geminiModel') || 'gemini-3.1-flash-lite-preview';
     setApiKey(savedKey);
     setModel(savedModel);
   }, []);
@@ -105,7 +105,7 @@ export const Settings: React.FC = () => {
               appearance: 'none',
             }}
           >
-            <option value="gemini-3.1-flash-lite">Gemini 3.1 Flash Lite (Default - Tercepat)</option>
+            <option value="gemini-3.1-flash-lite-preview">Gemini 3.1 Flash Lite (Default - Tercepat)</option>
             <option value="gemini-2.5-flash">Gemini 2.5 Flash (Opsi - Kualitas Tinggi)</option>
             <option value="gemini-2.5-flash-lite">Gemini 2.5 Flash Lite (Opsi - Alternatif)</option>
           </select>

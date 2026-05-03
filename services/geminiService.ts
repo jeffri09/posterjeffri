@@ -29,8 +29,8 @@ export const generatePosterContent = async (topic: string): Promise<Partial<Post
   `;
 
   const savedModel = localStorage.getItem('geminiModel');
-  const modelsToTry = savedModel ? [savedModel, 'gemini-3.1-flash-lite', 'gemini-2.5-flash'] : [
-    'gemini-3.1-flash-lite', 
+  const modelsToTry = savedModel ? [savedModel, 'gemini-3.1-flash-lite-preview', 'gemini-2.5-flash'] : [
+    'gemini-3.1-flash-lite-preview', 
     'gemini-2.5-flash-lite', 
     'gemini-2.5-flash'
   ];
