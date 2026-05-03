@@ -24,7 +24,9 @@ export const Settings: React.FC = () => {
   const handleTestConnection = async () => {
     setTestResult({ status: 'testing', message: 'Menguji koneksi...' });
     try {
-      const activeApiKey = apiKey || (import.meta as any).env.VITE_GEMINI_API_KEY;
+      // @ts-ignore
+      const systemApiKey = (import.meta as any).env.VITE_GEMINI_API_KEY || process.env.GEMINI_API_KEY || process.env.API_KEY;
+      const activeApiKey = apiKey || systemApiKey;
       if (!activeApiKey) {
         throw new Error("API Key belum diisi (baik oleh Anda maupun default sistem).");
       }
