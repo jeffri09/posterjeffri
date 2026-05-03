@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
+import { GoogleGenAI } from '@google/genai';
 
 export const Settings: React.FC = () => {
   const [apiKey, setApiKey] = useState('');
   const [model, setModel] = useState('gemini-3.1-flash-lite');
   const [isSaved, setIsSaved] = useState(false);
+  const [testResult, setTestResult] = useState<{ status: 'idle' | 'testing' | 'success' | 'error', message: string }>({ status: 'idle', message: '' });
 
   useEffect(() => {
     const savedKey = localStorage.getItem('geminiApiKey') || '';
@@ -17,6 +19,28 @@ export const Settings: React.FC = () => {
     localStorage.setItem('geminiModel', model);
     setIsSaved(true);
     setTimeout(() => setIsSaved(false), 2000);
+  };
+
+  const handleTestConnection = async () => {
+    setTestResult({ status: 'testing', message: 'Menguji koneksi...' });
+    try {
+      const activeApiKey = apiKey || (import.meta as any).env.VITE_GEMINI_API_KEY;
+      if (!activeApiKey) {
+        throw new Error("API Key belum diisi (baik oleh Anda maupun default sistem).");
+      }
+      const ai = new GoogleGenAI({ apiKey: activeApiKey });
+      const response = await ai.models.generateContent({
+        model: model,
+        contents: "Balas dengan 'Koneksi Berhasil' jika Anda menerima pesan ini."
+      });
+      if (response.text) {
+        setTestResult({ status: 'success', message: 'Koneksi berhasil! ' + response.text });
+      } else {
+        throw new Error("Respons kosong dari model.");
+      }
+    } catch (e: any) {
+      setTestResult({ status: 'error', message: 'Koneksi gagal: ' + (e.message || String(e)) });
+    }
   };
 
   return (
@@ -37,13 +61,13 @@ export const Settings: React.FC = () => {
 
         <div style={{ marginBottom: '24px' }}>
           <label style={{ display: 'block', fontSize: '14px', fontWeight: 600, marginBottom: '8px', color: 'var(--text-secondary)' }}>
-            Gemini API Key
+            Gemini API Key (Opsional)
           </label>
           <input
             type="password"
             value={apiKey}
             onChange={(e) => setApiKey(e.target.value)}
-            placeholder="AIzaSy..."
+            placeholder="Biarkan kosong untuk menggunakan default sistem..."
             style={{
               width: '100%',
               padding: '12px 16px',
@@ -56,7 +80,7 @@ export const Settings: React.FC = () => {
             }}
           />
           <p style={{ fontSize: '12px', color: 'var(--text-tertiary)', marginTop: '8px' }}>
-            Dapatkan API Key gratis di <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noreferrer" style={{ color: 'var(--accent-emerald)' }}>Google AI Studio</a>.
+            Dapatkan API Key gratis di <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noreferrer" style={{ color: 'var(--accent-emerald)' }}>Google AI Studio</a>. Jika kosong, sistem akan menggunakan API Key bawaan.
           </p>
         </div>
 
@@ -85,13 +109,43 @@ export const Settings: React.FC = () => {
           </select>
         </div>
 
-        <button
-          onClick={handleSave}
-          className={`btn-premium ${isSaved ? 'btn-emerald' : 'btn-gold'}`}
-          style={{ width: '100%', padding: '14px', fontSize: '16px', fontWeight: 600 }}
-        >
-          {isSaved ? '✅ Pengaturan Disimpan' : '💾 Simpan Pengaturan'}
-        </button>
+        <div style={{ display: 'flex', gap: '12px', marginTop: '32px' }}>
+          <button
+            onClick={handleSave}
+            className={`btn-premium ${isSaved ? 'btn-emerald' : 'btn-gold'}`}
+            style={{ flex: 1, padding: '14px', fontSize: '16px', fontWeight: 600 }}
+          >
+            {isSaved ? '✅ Pengaturan Disimpan' : '💾 Simpan Pengaturan'}
+          </button>
+          
+          <button
+            onClick={handleTestConnection}
+            disabled={testResult.status === 'testing'}
+            className="btn-premium btn-ghost"
+            style={{ flex: 1, padding: '14px', fontSize: '16px', fontWeight: 600, border: '1px solid var(--border-subtle)' }}
+          >
+            {testResult.status === 'testing' ? 'Menguji...' : '🔌 Test Koneksi'}
+          </button>
+        </div>
+
+        {testResult.status !== 'idle' && (
+          <div style={{
+            marginTop: '16px',
+            padding: '12px',
+            borderRadius: 'var(--radius-md)',
+            fontSize: '14px',
+            background: testResult.status === 'success' ? 'rgba(16, 185, 129, 0.1)' :
+                        testResult.status === 'error' ? 'rgba(239, 68, 68, 0.1)' : 'var(--bg-primary)',
+            color: testResult.status === 'success' ? 'var(--accent-emerald)' :
+                   testResult.status === 'error' ? '#ef4444' : 'var(--text-secondary)',
+            border: `1px solid ${
+              testResult.status === 'success' ? 'rgba(16, 185, 129, 0.2)' :
+              testResult.status === 'error' ? 'rgba(239, 68, 68, 0.2)' : 'var(--border-subtle)'
+            }`
+          }}>
+            {testResult.message}
+          </div>
+        )}
       </div>
     </div>
   );

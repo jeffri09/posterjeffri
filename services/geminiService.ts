@@ -2,9 +2,9 @@ import { GoogleGenAI, Type } from "@google/genai";
 import { PosterFormData } from "../types";
 
 const getAiClient = () => {
-  const apiKey = localStorage.getItem('geminiApiKey');
+  const apiKey = localStorage.getItem('geminiApiKey') || (import.meta as any).env.VITE_GEMINI_API_KEY;
   if (!apiKey) {
-    throw new Error("API Key belum dikonfigurasi. Silakan masuk ke menu Pengaturan.");
+    throw new Error("API Key belum dikonfigurasi. Silakan isi API Key di menu Pengaturan.");
   }
   return new GoogleGenAI({ apiKey });
 };

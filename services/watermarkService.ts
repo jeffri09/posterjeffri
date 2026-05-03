@@ -518,9 +518,9 @@ async function processGeminiSplash(
 
   const { data } = imageData;
 
-  // Kotak lokasi Gemini Watermark: ~6% lebar dan ~5% tinggi
-  const boxWidth = Math.min(Math.floor(width * 0.08), 280);
-  const boxHeight = Math.min(Math.floor(height * 0.06), 250);
+  // Kotak lokasi Gemini Watermark: ~10% lebar dan ~8% tinggi (diperbesar agar tidak terpotong)
+  const boxWidth = Math.min(Math.floor(width * 0.10), 350);
+  const boxHeight = Math.min(Math.floor(height * 0.08), 300);
   
   const startX = width - boxWidth;
   const startY = height - boxHeight;
@@ -586,16 +586,15 @@ async function processGeminiSplash(
       const lumMed = medR * 0.299 + medG * 0.587 + medB * 0.114;
 
       // Evaluasi apakah piksel asli merupakan benda asing putih bersinar (Watermark Gemini):
-      // - Jauh LEBIH TERANG dari sekitarnya (+15 px luminansi)
-      // - Warnanya memang lumayan terang (> 130 absolut)
-      // Jika mendeteksi karakter teks warna gelap (misal biru tua), aturan ini bernilai GAgal (Aman).
-      const isWatermark = lumOrig > lumMed + 15 && lumOrig > 130;
+      // Diperhalus: Lebih sensitif terhadap warna watermark redup (+8 px luminansi, >100 absolut)
+      // Jika mendeteksi karakter teks warna gelap (misal biru tua), aturan ini bernilai Gagal (Aman).
+      const isWatermark = lumOrig > lumMed + 8 && lumOrig > 100;
 
       if (isWatermark) {
         // Soft-Masking: Lakukan peleburan halus di pinggiran bintang transparan
-        // Jika anomali tipis, lebur setengah asli setengah median. 
-        // Jika anomali tebal (>35), hajar 100% menggunakan warna median murni.
-        const blendStrength = clamp((lumOrig - lumMed - 10) / 25, 0, 1);
+        // Jika anomali tipis, lebur sebagian. 
+        // Jika anomali tebal (>20), hajar 100% menggunakan warna median murni.
+        const blendStrength = clamp((lumOrig - lumMed - 5) / 15, 0, 1);
         
         data[targetIdx] = clamp(Math.round(origR * (1 - blendStrength) + medR * blendStrength), 0, 255);
         data[targetIdx + 1] = clamp(Math.round(origG * (1 - blendStrength) + medG * blendStrength), 0, 255);
