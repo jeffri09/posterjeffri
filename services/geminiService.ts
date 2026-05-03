@@ -26,6 +26,15 @@ export const generatePosterContent = async (topic: string): Promise<Partial<Post
     **NASIHAT:** Maks 2 kalimat singkat yang menyentuh hati.
     **VISUAL:** Deskripsi background ringkas (1-2 kalimat). WAJIB adaptif dengan topik (misal: gurun untuk sabar, api untuk neraka). Desain premium, banyak negative space. Jika ada manusia/hewan, WAJIB siluet/kartun tanpa wajah.
     **PALET WARNA:** Tentukan warna Dominan, Aksen, & Mood.
+    **PENTING**: WAJIB kembalikan BENTUK JSON SAJA tanpa markdown (\`\`\`json) atau teks lainnya! Format JSON-nya:
+    {
+      "title": "...",
+      "quoteArabic": "...",
+      "quoteTranslation": "...",
+      "advice": "...",
+      "visualContext": "...",
+      "colorPalette": "..."
+    }
   `;
 
   const savedModel = localStorage.getItem('geminiModel');
@@ -40,31 +49,28 @@ export const generatePosterContent = async (topic: string): Promise<Partial<Post
     let retries = 3;
     while (retries > 0) {
       try {
-        const response = await ai.models.generateContent({
+        const timeoutPromise = new Promise((_, reject) => {
+          setTimeout(() => reject(new Error("Request timeout setelah 20 detik")), 20000);
+        });
+        
+        const fetchPromise = ai.models.generateContent({
           model: modelName,
           contents: prompt,
           config: {
-            responseMimeType: 'application/json',
-            responseSchema: {
-              type: Type.OBJECT,
-              properties: {
-                title: { type: Type.STRING },
-                quoteArabic: { type: Type.STRING },
-                quoteTranslation: { type: Type.STRING },
-                advice: { type: Type.STRING },
-                visualContext: { type: Type.STRING },
-                colorPalette: { type: Type.STRING }
-              }
-            }
+            responseMimeType: 'application/json'
           }
         });
+
+        const response = await Promise.race([fetchPromise, timeoutPromise]) as any;
 
         const text = response.text;
         if (!text) {
           throw new Error(`Respons kosong dari model ${modelName}`);
         }
 
-        return JSON.parse(text);
+        // Clean up markdown just in case
+        const cleanedText = text.replace(/```json/gi, '').replace(/```/g, '').trim();
+        return JSON.parse(cleanedText);
       } catch (e: any) {
         lastError = e;
         const msg = (e.message || String(e)).toLowerCase();
