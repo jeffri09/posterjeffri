@@ -28,7 +28,7 @@ export const generateAndDownloadDocx = async (content: ArticleContent) => {
     const isArabic = p.type === 'arabic';
     
     // Determine alignment
-    let alignment = AlignmentType.JUSTIFIED;
+    let alignment: any = AlignmentType.JUSTIFIED;
     if (p.align === 'center') alignment = AlignmentType.CENTER;
     if (p.align === 'right' || isArabic) alignment = AlignmentType.RIGHT;
     if (p.align === 'left') alignment = AlignmentType.LEFT;
@@ -57,14 +57,14 @@ export const generateAndDownloadDocx = async (content: ArticleContent) => {
         properties: {
           page: {
             size: {
-              width: 215 * MM_TO_TWIP, // F4 width: 215mm
-              height: 330 * MM_TO_TWIP, // F4 height: 330mm
+              width: Math.round(215 * MM_TO_TWIP), // F4 width: 215mm
+              height: Math.round(330 * MM_TO_TWIP), // F4 height: 330mm
             },
             margin: {
-              top: 20 * MM_TO_TWIP,    // 2cm
-              right: 20 * MM_TO_TWIP,  // 2cm
-              bottom: 20 * MM_TO_TWIP, // 2cm
-              left: 20 * MM_TO_TWIP,   // 2cm
+              top: Math.round(20 * MM_TO_TWIP),    // 2cm
+              right: Math.round(20 * MM_TO_TWIP),  // 2cm
+              bottom: Math.round(20 * MM_TO_TWIP), // 2cm
+              left: Math.round(20 * MM_TO_TWIP),   // 2cm
             },
           },
         },
