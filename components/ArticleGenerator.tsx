@@ -114,7 +114,7 @@ export const ArticleGenerator: React.FC = () => {
                   <svg className="animate-spin" width="18" height="18" viewBox="0 0 24 24" fill="none">
                     <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3" strokeDasharray="31.4 31.4" strokeLinecap="round"/>
                   </svg>
-                  AI Sedang Menulis Artikel (~60-90 detik)...
+                  AI Sedang Menulis Artikel (3 tahap, ~2-4 menit)...
                 </span>
               ) : (
                 "✨ Generate Artikel"

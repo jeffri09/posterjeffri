@@ -16,7 +16,7 @@ export const generateAndDownloadDocx = async (content: ArticleContent) => {
         new TextRun({
           text: content.title,
           bold: true,
-          size: 32, // 16pt (half-points)
+          size: 28, // 14pt
           font: "Calibri",
         }),
       ],
@@ -36,13 +36,13 @@ export const generateAndDownloadDocx = async (content: ArticleContent) => {
     paragraphs.push(
       new Paragraph({
         alignment: alignment,
-        spacing: { after: 200, line: 240 }, // Line spacing 1.0 is ~240 twips
+        spacing: { after: 200, line: 240 }, // Line spacing 1.0
         bidirectional: isArabic,
         children: [
           new TextRun({
             text: p.text,
             bold: p.bold || false,
-            size: isArabic ? 32 : 22, // 16pt for Arabic, 11pt for Latin
+            size: isArabic ? 32 : 22, // 16pt untuk Arabic, 11pt untuk Latin
             font: isArabic ? "Traditional Arabic" : "Calibri",
             rightToLeft: isArabic,
           }),
