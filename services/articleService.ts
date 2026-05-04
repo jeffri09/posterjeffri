@@ -210,7 +210,12 @@ export const generateArticleContent = async (
     BAB 7: KESIMPULAN & PENUTUP
     - Rangkum seluruh poin dalil dari Bab 1 hingga Bab 6.
     - Sampaikan nasihat dan motivasi penutup bersandarkan dalil.
-    - Paragraf TERAKHIR WAJIB berisi "Daftar Rujukan/Referensi" yang FAKTUAL dari nama-nama kitab ulama yang Anda kutip di atas. DILARANG KERAS mencantumkan rujukan fiktif, angka jilid karangan, atau referensi yang tidak berhubungan dengan isi materi. Tuliskan saja "Kitab [Nama Kitab] karya [Nama Penulis]" tanpa nomor halaman/jilid fiktif.
+    - Paragraf TERAKHIR WAJIB berisi "Daftar Rujukan" yang SANGAT LENGKAP, PROFESIONAL, dan DAPAT DIPERTANGGUNGJAWABKAN berdasarkan apa yang benar-benar Anda kutip di bagian sebelumnya.
+    - Format Rujukan (WAJIB DIIKUTI TAPI JANGAN MENGARANG DATA):
+      1. Tafsir: Sebutkan Nama Kitab, Penulis (Misal: Tafsir Al-Qur'an Al-'Azhim karya Ibnu Katsir).
+      2. Hadits: Sebutkan kitab asal (Kutub as-Sittah dll), periwayat, status derajat hadits (shahih/hasan), dan kitab syarah yang digunakan (Misal: Fathul Bari Syarah Shahih Al-Bukhari karya Ibnu Hajar Al-Asqalani).
+      3. Kitab/Buku Ulama: Sebutkan Judul Kitab/Buku, Nama Penulis, dan (HANYA JIKA ANDA TAHU DATA VALIDNYA) Penerbit atau pentahqiq-nya.
+    - ATURAN KETAT RUJUKAN: DATA HARUS 100% VALID. JANGAN PERNAH mengarang nama penerbit, mengarang halaman, atau mencantumkan kitab fiktif. Jika Anda tidak yakin dengan detail penerbitnya, cukup cantumkan Judul Kitab dan Penulis aslinya.
 
     PENTING: Output WAJIB JSON murni HANYA BERISI ARRAY PARAGRAPHS:
     {
