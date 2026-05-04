@@ -17,18 +17,91 @@ export interface ArticleParagraph {
   align?: 'left' | 'center' | 'right' | 'justify';
 }
 
+export interface ArticleStats {
+  totalLatinWords: number;
+  totalEffectiveWords: number;
+  totalParagraphs: number;
+  ayatCount: number;
+  haditsCount: number;
+  ulamaQuoteCount: number;
+  dalilRatio: number;
+}
+
 export interface ArticleContent {
   title: string;
   paragraphs: ArticleParagraph[];
+  stats?: ArticleStats;
 }
 
 // Jeda antar panggilan API untuk menghormati limit RPM free tier
 const rateLimitDelay = (ms: number) => new Promise(r => setTimeout(r, ms));
 
+// ═══ HELPER: Validasi struktur JSON paragraf dari AI ═══
+const validateAndCleanParagraphs = (data: any): ArticleParagraph[] => {
+  const paragraphs = data?.paragraphs;
+  if (!paragraphs || !Array.isArray(paragraphs)) {
+    throw new Error("Respons AI tidak mengandung array 'paragraphs' yang valid.");
+  }
+  return paragraphs.filter((p: any) => {
+    if (!p.type || !['latin', 'arabic'].includes(p.type)) return false;
+    if (!p.text || typeof p.text !== 'string' || p.text.trim().length === 0) return false;
+    const lower = p.text.toLowerCase().trim();
+    if (lower.startsWith('headline:') || lower.startsWith('nasihat:') || lower.startsWith('dalil:')) return false;
+    return true;
+  }).map((p: any) => ({
+    type: p.type as 'latin' | 'arabic',
+    text: p.text.trim(),
+    bold: p.bold === true,
+    align: ['left', 'center', 'right', 'justify'].includes(p.align) ? p.align : (p.type === 'arabic' ? 'right' : 'justify'),
+  }));
+};
+
+// ═══ HELPER: Ekstrak konteks dari bagian sebelumnya untuk chain context ═══
+const extractChainContext = (paragraphs: ArticleParagraph[]): { topics: string[], dalilUsed: string[] } => {
+  const topics: string[] = [];
+  const dalilUsed: string[] = [];
+  for (const p of paragraphs) {
+    if (p.bold && p.type === 'latin') topics.push(p.text);
+    const text = p.text;
+    const qsMatches = text.match(/QS\.\s*[A-Za-z'\-]+[\s:]*\d+/g);
+    if (qsMatches) dalilUsed.push(...qsMatches);
+    const hrMatches = text.match(/HR\.\s*[A-Za-z'\-]+/g);
+    if (hrMatches) dalilUsed.push(...hrMatches);
+  }
+  return { topics, dalilUsed: [...new Set(dalilUsed)] };
+};
+
+// ═══ HELPER: Hitung kata efektif (Latin + kontribusi Arab ke halaman) ═══
+const countEffectiveWords = (paragraphs: ArticleParagraph[]): number => {
+  return paragraphs.reduce((total, p) => {
+    const words = p.text.split(/\s+/).filter(w => w.length > 0).length;
+    return total + (p.type === 'arabic' ? Math.round(words * 1.8) : words);
+  }, 0);
+};
+
+// ═══ HELPER: Hitung statistik kualitas artikel ═══
+const computeStats = (paragraphs: ArticleParagraph[]): ArticleStats => {
+  let ayatCount = 0, haditsCount = 0, ulamaQuoteCount = 0, dalilParas = 0;
+  for (const p of paragraphs) {
+    const t = p.text;
+    const qs = t.match(/QS\./g); if (qs) ayatCount += qs.length;
+    const hr = t.match(/HR\./g); if (hr) haditsCount += hr.length;
+    if (/(?:rahimahullah|hafizhahullah|berkata|berfatwa|menafsirkan)/i.test(t)) ulamaQuoteCount++;
+    if (p.type === 'arabic') dalilParas++;
+  }
+  const totalLatinWords = paragraphs.filter(p => p.type === 'latin').reduce((s, p) => s + p.text.split(/\s+/).filter(w => w.length > 0).length, 0);
+  return {
+    totalLatinWords, totalEffectiveWords: countEffectiveWords(paragraphs),
+    totalParagraphs: paragraphs.length, ayatCount, haditsCount, ulamaQuoteCount,
+    dalilRatio: paragraphs.length > 0 ? Math.round((dalilParas / paragraphs.length) * 100) : 0,
+  };
+};
+
 const generateArticlePart = async (
   ai: any,
   modelName: string,
-  prompt: string
+  prompt: string,
+  systemInstruction?: string
 ): Promise<any> => {
   let retries = 3;
   let lastError: any = null;
@@ -40,15 +113,18 @@ const generateArticlePart = async (
         setTimeout(() => reject(new Error("Request timeout setelah 3 menit")), 180000);
       });
       
-      const fetchPromise = ai.models.generateContent({
-        model: modelName,
-        contents: prompt,
-        config: {
+      const config: any = {
           responseMimeType: 'application/json',
           temperature: 0.1,
           topP: 0.8,
-          maxOutputTokens: 16384 // Cukup besar untuk ~8000 kata, aman untuk free tier TPM 205K
-        }
+          maxOutputTokens: 16384,
+      };
+      if (systemInstruction) config.systemInstruction = systemInstruction;
+
+      const fetchPromise = ai.models.generateContent({
+        model: modelName,
+        contents: prompt,
+        config,
       });
 
       const response = await Promise.race([fetchPromise, timeoutPromise]) as any;
@@ -100,37 +176,39 @@ export const generateArticleContent = async (
     'gemini-2.5-flash'
   ];
 
-  const baseRules = `
-    Anda adalah seorang Ustadz bermanhaj Salaf yang ahli dalam menulis karya ilmiah dan artikel dakwah yang panjang, mendalam, dan terstruktur.
-    TARGET PEMBACA: Penuntut Ilmu (Thalibul 'Ilmi). Gunakan bahasa yang akademis, ilmiah, sangat mendalam, dan terstruktur rapi.
-    Topik Utama: "${topic}".
-    ${reference ? `\nReferensi dari pengguna:\n"${reference}"\nEksplorasi secara maksimal.` : ''}
+  // ═══ SYSTEM INSTRUCTION — aturan ketat level sistem, lebih dihormati model ═══
+  const sysInstruction = `Anda adalah seorang Ustadz bermanhaj Salaf yang ahli dalam menulis karya ilmiah dan artikel dakwah.
+TARGET PEMBACA: Penuntut Ilmu (Thalibul 'Ilmi). Bahasa akademis, ilmiah, dan terstruktur rapi.
 
-    KONTEKS FORMAT DOKUMEN (WAJIB DIPAHAMI UNTUK TARGET PANJANG):
-    - Dokumen dicetak pada kertas F4 (215x330mm), margin 2cm, font Calibri 11pt, line spacing 1.0.
-    - Dengan format ini, SATU HALAMAN F4 berisi sekitar 1000 kata Latin.
-    - Target: artikel HARUS mengisi MINIMAL 4 HALAMAN PENUH = MINIMAL 4000 KATA LATIN.
-    - Anda WAJIB menulis dengan sangat panjang, detail, dan menyeluruh untuk mencapai target ini.
+KONTEKS FORMAT: Kertas F4 (215x330mm), margin 2cm, Calibri 11pt, spasi 1.0. Target: MINIMAL 4 HALAMAN = 4000 KATA LATIN.
 
-    ATURAN KETAT (WAJIB DIIKUTI):
-    0. DILARANG KERAS MENGARANG (HALUSINASI) ISI, FATWA, ATAU DALIL. Anda harus bertindak secara ilmiah dan amanah.
-    1. Takhrij Hadits WAJIB Shahih (Bukhari dan Muslim dll). DILARANG menggunakan hadits dha'if atau maudhu'. Jika tidak ada hadits spesifik, gunakan hadits keumuman syariat.
-    2. Rujukan WAJIB merujuk pada: Sahabat, Tabi'in, Ulama Salaf, Ibnu Taimiyah, Ibnul Qayyim, Syaikh Bin Baz, Syaikh Al-Albani, Syaikh Al-Utsaimin, Syaikh Shalih al-Fauzan, Lajnah Da'imah, dan kitab-kitab tafsir mu'tabar.
-    3. Teks Al-Qur'an (Arab) WAJIB rasm Utsmani dan teks Hadits WAJIB teks asli Arabnya.
-    4. REFERENSI DALIL GANDA: WAJIB mencantumkan referensi dalil di AKHIR TEKS ARAB (dengan huruf latin) dan di AKHIR TEKS TERJEMAHAN.
-    5. KUTIPAN & FOOTNOTE HARUS FAKTUAL: JANGAN PERNAH MENGARANG ANGKA JILID/HALAMAN ATAU NOMOR HADITS. Jika Anda tidak yakin 100% dengan nomor/halamannya, CUKUP SEBUTKAN NAMA KITAB DAN BAB PEMBAHASAN ATAU NAMA PENGARANGNYA SAJA. DILARANG MENGARANG REFERENSI YANG TIDAK ADA HUBUNGANNYA DENGAN TOPIK.
+ATURAN KETAT:
+0. DILARANG KERAS MENGARANG (HALUSINASI) ISI, FATWA, ATAU DALIL.
+1. Hadits WAJIB Shahih. DILARANG hadits dha'if/maudhu'.
+2. Rujukan: Sahabat, Tabi'in, Ulama Salaf, Ibnu Taimiyah, Ibnul Qayyim, Bin Baz, Al-Albani, Al-Utsaimin, Al-Fauzan, Lajnah Da'imah, kitab tafsir mu'tabar.
+3. Teks Al-Qur'an WAJIB rasm Utsmani, Hadits WAJIB teks Arab asli.
+4. Referensi dalil WAJIB di AKHIR TEKS ARAB (huruf latin) DAN di AKHIR TERJEMAHAN.
+5. JANGAN MENGARANG angka jilid/halaman/nomor hadits. Cukup nama kitab dan pengarang saja jika tidak yakin.
 
-    ATURAN MENULIS PARAGRAF & PENCAPAIAN PANJANG ARTIKEL:
-    - Pisahkan teks Arab dan teks Latin ke dalam objek 'paragraphs' yang BERBEDA.
-    - Gunakan properti "bold": true untuk sub-judul.
-    - Gunakan properti "align": "center" untuk judul bagian, "justify" untuk paragraf biasa, dan "right" untuk arabic.
-    - FOKUS PADA DALIL & ATSAR: Untuk mencapai target panjang 4000 kata, PERBANYAK jumlah dalil Al-Qur'an, Hadits, Atsar Sahabat, dan perkataan Ulama Salaf (beserta teks Arabnya). 
-    - DILARANG KERAS memperpanjang artikel dengan opini pribadi, karangan bebas, atau retorika latin yang bertele-tele. Artikel harus terasa seperti kitab ulama salaf yang padat dengan nukilan (qola Allah, qola Rasul, qola ulama).
-    - Untuk setiap poin yang dibahas, WAJIB jelaskan: (a) konteksnya, (b) dalil pendukung (Arab & terjemah), (c) penjelasan ulama (syarah/tafsir asli), (d) kesimpulan faedahnya.
-  `;
+ATURAN FORMAT OUTPUT:
+- Pisahkan teks Arab dan Latin ke paragraf BERBEDA.
+- "bold": true untuk sub-judul, "align": "center" untuk judul, "justify" untuk paragraf, "right" untuk arabic.
+- FOKUS DALIL & ATSAR: Perbanyak kutipan Al-Qur'an, Hadits, Atsar, perkataan Ulama (beserta teks Arab). Kualitas dan relevansi dalil LEBIH PENTING daripada kuantitas.
+- DILARANG memperpanjang dengan opini/karangan bebas. Artikel harus padat nukilan (qola Allah, qola Rasul, qola ulama).
+
+CONTOH FORMAT BENAR:
+[
+  { "type": "latin", "text": "Dalil Pertama: Kewajiban Bertauhid", "bold": true, "align": "center" },
+  { "type": "arabic", "text": "وَمَا خَلَقْتُ الْجِنَّ وَالْإِنسَ إِلَّا لِيَعْبُدُونِ (QS. Adz-Dzariyat: 56)", "bold": false, "align": "right" },
+  { "type": "latin", "text": "\\"Dan Aku tidak menciptakan jin dan manusia melainkan supaya mereka beribadah kepada-Ku.\\" (QS. Adz-Dzariyat: 56)", "bold": false, "align": "justify" },
+  { "type": "latin", "text": "Imam Ibnu Katsir rahimahullah berkata dalam tafsirnya: \\"Makna ayat ini adalah bahwa Allah menciptakan makhluk agar beribadah kepada-Nya semata.\\" (Tafsir Al-Qur'an Al-'Azhim, Surat Adz-Dzariyat)", "bold": false, "align": "justify" }
+]
+FORMAT SALAH: Menggabung Arab+terjemah dalam 1 paragraf, menulis "menurut para ulama" tanpa nama spesifik, mengarang nomor halaman.`;
+
+  const topicCtx = `Topik Utama: "${topic}".${reference ? `\nReferensi pengguna: "${reference}"\nEksplorasi secara maksimal.` : ''}`;
 
   const part1Prompt = `
-    ${baseRules}
+    ${topicCtx}
     Tugas Anda SEKARANG: Buat BAGIAN PERTAMA (dari 3 bagian). Target bagian ini: MINIMAL 1300 KATA LATIN.
     Bagian ini mencakup 2 bab:
 
@@ -151,210 +229,176 @@ export const generateArticleContent = async (
     PENTING: Output WAJIB JSON murni:
     {
       "title": "Judul Artikel yang Menarik dan Ilmiah",
-      "paragraphs": [
-        { "type": "latin", "text": "...", "bold": true, "align": "center" },
-        { "type": "latin", "text": "[paragraf panjang 4-6 kalimat]", "bold": false, "align": "justify" },
-        { "type": "arabic", "text": "...", "bold": false, "align": "right" }
-      ]
+      "paragraphs": [...]
     }
   `;
 
-  const part2Prompt = `
-    ${baseRules}
-    Tugas Anda SEKARANG: Buat BAGIAN KEDUA (dari 3 bagian). Target bagian ini: MINIMAL 1500 KATA LATIN.
-    Bagian ini mencakup 2 bab:
+  // part2 dan part3 prompt dibangun DINAMIS setelah bagian sebelumnya selesai (chain context)
+  // Ini mencegah pengulangan dalil dan menjaga konsistensi gaya
 
-    BAB 3: DALIL AL-QUR'AN & TAFSIR RINCI (Kutip SEBANYAK MUNGKIN ayat yang relevan, MINIMAL 7-10 ayat)
-    Struktur PER AYAT (ulangi untuk setiap ayat):
-    1. Paragraf sub-judul ayat (bold, center)
-    2. Teks Arab ayat dengan rasm Utsmani (type: arabic, align: right) — akhiri dengan referensi latin "(QS. Nama Surat: Ayat)"
-    3. Paragraf terjemahan ayat dalam bahasa Indonesia (type: latin, justify)
-    4. Paragraf penjelasan tafsir, MENGUTIP LANGSUNG perkataan ahli tafsir (seperti Ibnu Katsir, As-Sa'di, dll) tanpa mengarang nomor halaman.
-    5. Paragraf faedah dan pelajaran ringkas dari ayat tersebut.
-
-    BAB 4: DALIL HADITS & SYARAH RINCI (Kutip SEBANYAK MUNGKIN hadits shahih, MINIMAL 7-10 hadits)
-    Struktur PER HADITS (ulangi untuk setiap hadits):
-    1. Paragraf sub-judul hadits (bold, center)
-    2. Teks Arab matan hadits (type: arabic, align: right) — akhiri dengan referensi latin "(HR. Bukhari / Muslim / dll)"
-    3. Paragraf terjemahan hadits (type: latin, justify)
-    4. Paragraf syarah/penjelasan hadits, MENGUTIP LANGSUNG penjelasan ulama dari kitab syarah (seperti Fathul Bari, Syarah Nawawi, dll).
-
-    PENTING: Output WAJIB JSON murni HANYA BERISI ARRAY PARAGRAPHS:
-    {
-      "paragraphs": [
-        { "type": "latin", "text": "...", "bold": true, "align": "center" },
-        { "type": "arabic", "text": "...", "bold": false, "align": "right" },
-        { "type": "latin", "text": "[paragraf panjang 4-6 kalimat]", "bold": false, "align": "justify" }
-      ]
-    }
-  `;
-
-  const part3Prompt = `
-    ${baseRules}
-    Tugas Anda SEKARANG: Buat BAGIAN KETIGA (TERAKHIR). Target bagian ini: MINIMAL 1500 KATA LATIN.
-    Bagian ini mencakup 3 bab:
-
-    BAB 5: ATSAR SALAF & PANDANGAN ULAMA (Kutip BANYAK Atsar Sahabat, Tabi'in, dan Ulama)
-    Paparkan secara terperinci pandangan para ulama berikut beserta TEKS ARAB ucapan mereka jika memungkinkan:
-    - Perkataan Sahabat Nabi dan Tabi'in yang relevan dengan topik.
-    - Perkataan ulama salaf terdahulu (Imam Ahmad, Syafi'i, Ibnu Taimiyah, Ibnul Qayyim, dll).
-    - Fatwa ulama kontemporer (Syaikh Bin Baz, Syaikh Al-Utsaimin, Syaikh Al-Albani, Syaikh Shalih Al-Fauzan, Lajnah Da'imah).
-    *Setiap kutipan WAJIB menyertakan nama ulama atau kitab, JANGAN mengarang nomor halaman jika tidak yakin. Pisahkan ucapan Arab ke paragraf type: arabic.
-
-    BAB 6: HUKUM CABANG & STUDI KASUS (Berdasarkan Fatwa Ulama)
-    Bahas secara ilmiah dan berlandaskan dalil:
-    - Hukum-hukum turunan/cabang dari topik utama (minimal 3 hukum cabang).
-    - Studi kasus kontemporer: contoh nyata implementasi di kehidupan masa kini (minimal 2 kasus).
-    - Panduan praktis bagi umat Islam dalam mengamalkan topik ini sesuai sunnah.
-
-    BAB 7: KESIMPULAN & PENUTUP
-    - Rangkum seluruh poin dalil dari Bab 1 hingga Bab 6.
-    - Sampaikan nasihat dan motivasi penutup bersandarkan dalil.
-    - Paragraf TERAKHIR WAJIB berisi "Daftar Rujukan" yang SANGAT LENGKAP, PROFESIONAL, dan DAPAT DIPERTANGGUNGJAWABKAN berdasarkan apa yang benar-benar Anda kutip di bagian sebelumnya.
-    - Format Rujukan (WAJIB DIIKUTI TAPI JANGAN MENGARANG DATA):
-      1. Tafsir: Sebutkan Nama Kitab, Penulis (Misal: Tafsir Al-Qur'an Al-'Azhim karya Ibnu Katsir).
-      2. Hadits: Sebutkan kitab asal (Kutub as-Sittah dll), periwayat, status derajat hadits (shahih/hasan), dan kitab syarah yang digunakan (Misal: Fathul Bari Syarah Shahih Al-Bukhari karya Ibnu Hajar Al-Asqalani).
-      3. Kitab/Buku Ulama: Sebutkan Judul Kitab/Buku, Nama Penulis, dan (HANYA JIKA ANDA TAHU DATA VALIDNYA) Penerbit atau pentahqiq-nya.
-    - ATURAN KETAT RUJUKAN: DATA HARUS 100% VALID. JANGAN PERNAH mengarang nama penerbit, mengarang halaman, atau mencantumkan kitab fiktif. Jika Anda tidak yakin dengan detail penerbitnya, cukup cantumkan Judul Kitab dan Penulis aslinya.
-
-    PENTING: Output WAJIB JSON murni HANYA BERISI ARRAY PARAGRAPHS:
-    {
-      "paragraphs": [
-        { "type": "latin", "text": "...", "bold": true, "align": "center" },
-        { "type": "latin", "text": "[paragraf panjang 4-6 kalimat]", "bold": false, "align": "justify" },
-        { "type": "arabic", "text": "...", "bold": false, "align": "right" }
-      ]
-    }
-  `;
-
-  // Fungsi hitung jumlah kata Latin dari array paragraphs
-  const countLatinWords = (paragraphs: ArticleParagraph[]): number => {
-    return paragraphs
-      .filter(p => p.type === 'latin')
-      .reduce((total, p) => total + p.text.split(/\s+/).filter(w => w.length > 0).length, 0);
-  };
+  const jsonOutputNote = `PENTING: Output WAJIB JSON murni: { "paragraphs": [...] }`;
 
   let lastError: any = null;
 
   for (const modelName of modelsToTry) {
     try {
       // === TAHAP 1: Pendahuluan & Definisi ===
-      if (onProgress) onProgress(10, `[1/3] Menyusun Pendahuluan & Definisi...`);
-      console.log(`[Tahap 1/3] Membuat Pendahuluan & Definisi dengan ${modelName}...`);
-      const part1 = await generateArticlePart(ai, modelName, part1Prompt);
-      console.log(`[Tahap 1/3] Selesai. Paragraf: ${part1.paragraphs?.length || 0}`);
-      
-      // Jeda 5 detik antar panggilan untuk menghormati RPM limit (14 RPM = ~4.3 detik antar request)
-      if (onProgress) onProgress(25, `Menunggu jeda API rate-limit...`);
+      if (onProgress) onProgress(5, `[1/5] Menyusun Pendahuluan & Definisi...`);
+      console.log(`[Tahap 1/5] Membuat Pendahuluan & Definisi dengan ${modelName}...`);
+      const part1Raw = await generateArticlePart(ai, modelName, part1Prompt, sysInstruction);
+      const part1Paras = validateAndCleanParagraphs(part1Raw);
+      console.log(`[Tahap 1/5] Selesai. Paragraf: ${part1Paras.length}`);
+
+      if (onProgress) onProgress(15, `Menunggu jeda API...`);
       await rateLimitDelay(5000);
 
-      // === TAHAP 2: Dalil Al-Qur'an & Hadits ===
-      if (onProgress) onProgress(35, `[2/3] Menyusun Dalil Al-Qur'an & Hadits...`);
-      console.log(`[Tahap 2/3] Membuat Dalil Al-Qur'an & Hadits dengan ${modelName}...`);
-      const part2 = await generateArticlePart(ai, modelName, part2Prompt);
-      console.log(`[Tahap 2/3] Selesai. Paragraf: ${part2.paragraphs?.length || 0}`);
-      
-      if (onProgress) onProgress(55, `Menunggu jeda API rate-limit...`);
+      // === TAHAP 2: Dalil Al-Qur'an & Hadits (dengan chain context dari part1) ===
+      const ctx1 = extractChainContext(part1Paras);
+      const part2Prompt = `${topicCtx}
+    KONTEKS BAGIAN SEBELUMNYA (JANGAN ULANGI):
+    - Bab yang sudah ditulis: ${ctx1.topics.join(', ')}
+    - Dalil yang sudah digunakan: ${ctx1.dalilUsed.join(', ') || 'belum ada'}
+
+    Tugas: Buat BAGIAN KEDUA. Target: MINIMAL 1500 KATA LATIN.
+
+    BAB 3: DALIL AL-QUR'AN & TAFSIR RINCI
+    Kutip SEMUA ayat yang BENAR-BENAR RELEVAN dengan topik (kualitas > kuantitas).
+    Struktur PER AYAT: sub-judul (bold) → teks Arab (arabic, right) → terjemahan (latin, justify) → tafsir mengutip ulama → faedah.
+
+    BAB 4: DALIL HADITS & SYARAH RINCI
+    Kutip hadits-hadits shahih yang RELEVAN (kualitas > kuantitas).
+    Struktur PER HADITS: sub-judul (bold) → matan Arab (arabic, right) → terjemahan (latin, justify) → syarah mengutip kitab ulama.
+
+    ${jsonOutputNote}`;
+
+      if (onProgress) onProgress(25, `[2/5] Menyusun Dalil Al-Qur'an & Hadits...`);
+      console.log(`[Tahap 2/5] Membuat Dalil dengan chain context...`);
+      const part2Raw = await generateArticlePart(ai, modelName, part2Prompt, sysInstruction);
+      const part2Paras = validateAndCleanParagraphs(part2Raw);
+      console.log(`[Tahap 2/5] Selesai. Paragraf: ${part2Paras.length}`);
+
+      if (onProgress) onProgress(35, `Menunggu jeda API...`);
       await rateLimitDelay(5000);
 
-      // === TAHAP 3: Fatwa, Studi Kasus & Kesimpulan ===
-      if (onProgress) onProgress(65, `[3/3] Menyusun Fatwa, Kasus & Kesimpulan...`);
-      console.log(`[Tahap 3/3] Membuat Fatwa, Studi Kasus & Kesimpulan dengan ${modelName}...`);
-      const part3 = await generateArticlePart(ai, modelName, part3Prompt);
-      console.log(`[Tahap 3/3] Selesai. Paragraf: ${part3.paragraphs?.length || 0}`);
+      // === TAHAP 3: Fatwa, Studi Kasus & Kesimpulan (chain context, TANPA rujukan) ===
+      const ctx2 = extractChainContext([...part1Paras, ...part2Paras]);
+      const part3Prompt = `${topicCtx}
+    KONTEKS BAGIAN SEBELUMNYA (JANGAN ULANGI):
+    - Bab yang sudah ditulis: ${ctx2.topics.join(', ')}
+    - Dalil yang sudah digunakan: ${ctx2.dalilUsed.join(', ')}
+
+    Tugas: Buat BAGIAN KETIGA. Target: MINIMAL 1500 KATA LATIN.
+
+    BAB 5: ATSAR SALAF & PANDANGAN ULAMA
+    Kutip perkataan Sahabat, Tabi'in, ulama salaf (Imam Ahmad, Syafi'i, Ibnu Taimiyah, Ibnul Qayyim dll), dan fatwa ulama kontemporer (Bin Baz, Al-Utsaimin, Al-Albani, Al-Fauzan, Lajnah Da'imah). Sertakan TEKS ARAB ucapan mereka. JANGAN mengarang nomor halaman.
+
+    BAB 6: HUKUM CABANG & STUDI KASUS
+    Bahas hukum-hukum turunan (min 3), studi kasus kontemporer (min 2), panduan praktis sesuai sunnah. Berlandaskan dalil dan fatwa.
+
+    BAB 7: KESIMPULAN & PENUTUP
+    Rangkum poin-poin dalil utama. Nasihat penutup bersandarkan dalil. JANGAN buat daftar rujukan di sini (akan dibuat terpisah).
+
+    ${jsonOutputNote}`;
+
+      if (onProgress) onProgress(45, `[3/5] Menyusun Fatwa, Kasus & Kesimpulan...`);
+      console.log(`[Tahap 3/5] Membuat Fatwa & Kesimpulan dengan chain context...`);
+      const part3Raw = await generateArticlePart(ai, modelName, part3Prompt, sysInstruction);
+      const part3Paras = validateAndCleanParagraphs(part3Raw);
+      console.log(`[Tahap 3/5] Selesai. Paragraf: ${part3Paras.length}`);
 
       // Gabungkan semua paragraf
-      let allParagraphs: ArticleParagraph[] = [
-        ...(part1.paragraphs || []),
-        ...(part2.paragraphs || []),
-        ...(part3.paragraphs || [])
-      ];
+      let allParagraphs: ArticleParagraph[] = [...part1Paras, ...part2Paras, ...part3Paras];
+      let totalWords = countEffectiveWords(allParagraphs);
+      console.log(`[Validasi] Total kata efektif: ${totalWords}, Total paragraf: ${allParagraphs.length}`);
 
-      let totalWords = countLatinWords(allParagraphs);
-      console.log(`[Validasi] Total kata Latin: ${totalWords}, Total paragraf: ${allParagraphs.length}`);
-
-      // === TAHAP EKSPANSI: Jika kurang dari 3500 kata, tambah konten (maks 2 kali ekspansi) ===
-      // Budget: maks 5 panggilan total (3 utama + 2 ekspansi) = aman di bawah 14 RPM
-      // Token: 5 × ~20K = ~100K total, aman di bawah 205K TPM
-      let expansionAttempt = 0;
-      const MAX_EXPANSIONS = 2;
-
-      while (totalWords < 3500 && expansionAttempt < MAX_EXPANSIONS) {
-        expansionAttempt++;
-        if (onProgress) onProgress(75 + (expansionAttempt * 10), `Memperpanjang artikel (Ekspansi ${expansionAttempt}/2)...`);
-        await rateLimitDelay(5000); // Jeda sebelum ekspansi
-
+      // === TAHAP EKSPANSI: Jika kurang dari 3500 kata efektif ===
+      if (totalWords < 3500) {
+        if (onProgress) onProgress(55, `Memperpanjang artikel (ekspansi dalil)...`);
+        await rateLimitDelay(5000);
         const kekurangan = 3500 - totalWords;
-        console.log(`[Ekspansi ${expansionAttempt}/${MAX_EXPANSIONS}] Kata baru ${totalWords}/3500 (kurang ~${kekurangan}). Meminta AI menulis tambahan...`);
-
-        const expansionPrompt = `
-          ${baseRules}
-          Artikel tentang topik "${topic}" SUDAH ditulis tetapi MASIH KURANG PANJANG.
-          Status: baru ${totalWords} kata Latin, butuh minimal 3500 kata, kurang ~${kekurangan} kata lagi.
-          
-          Tugas Anda: Tulis TAMBAHAN konten BARU berupa KUMPULAN DALIL, ATSAR, ATAU FATWA ULAMA untuk memperpanjang artikel. JANGAN menambahkan opini atau karangan bebas latin.
-          Anda WAJIB menambahkan dari opsi berikut (pilih yang belum dibahas):
-          - Dalil-dalil tambahan (ayat/hadits) beserta teks Arab dan tafsir/syarahnya
-          - Kisah atau atsar salaf yang shahih terkait topik beserta teks Arabnya
-          - Fatwa-fatwa tambahan dari para ulama
-          - Hukum-hukum cabang tambahan berlandaskan dalil
-          
-          Target: Tambahkan konten HINGGA mencapai panjang minimal yang diminta.
-          PERBANYAK TEKS ARAB (AYAT, HADITS, PERKATAAN ULAMA) DAN TERJEMAHANNYA UNTUK MENCAPAI TARGET PANJANG INI, BUKAN DENGAN MENGARANG OPINI.
-
-          Output WAJIB JSON murni:
-          {
-            "paragraphs": [
-              { "type": "latin", "text": "...", "bold": true, "align": "center" },
-              { "type": "latin", "text": "[paragraf panjang 4-6 kalimat]", "bold": false, "align": "justify" },
-              { "type": "arabic", "text": "...", "bold": false, "align": "right" }
-            ]
-          }
-        `;
-        
+        const expansionPrompt = `${topicCtx}
+    Artikel SUDAH ditulis tapi KURANG PANJANG (${totalWords} kata, butuh 3500).
+    Tulis TAMBAHAN berupa dalil/atsar/fatwa BARU (jangan ulangi yang sudah ada).
+    Dalil yang sudah digunakan: ${extractChainContext(allParagraphs).dalilUsed.join(', ')}
+    Target tambahan: ~${kekurangan} kata. Perbanyak teks Arab + terjemah + syarah.
+    ${jsonOutputNote}`;
         try {
-          const expansion = await generateArticlePart(ai, modelName, expansionPrompt);
-          if (expansion.paragraphs?.length > 0) {
-            // Sisipkan sebelum kesimpulan (cari paragraf bold terakhir yang berisi "Kesimpulan")
-            let insertIndex = allParagraphs.length;
+          const expRaw = await generateArticlePart(ai, modelName, expansionPrompt, sysInstruction);
+          const expParas = validateAndCleanParagraphs(expRaw);
+          if (expParas.length > 0) {
+            let insertIdx = allParagraphs.length;
             for (let i = allParagraphs.length - 1; i >= Math.max(0, allParagraphs.length - 10); i--) {
-              if (allParagraphs[i].bold && allParagraphs[i].text.toLowerCase().includes('kesimpulan')) {
-                insertIndex = i;
-                break;
-              }
+              if (allParagraphs[i].bold && allParagraphs[i].text.toLowerCase().includes('kesimpulan')) { insertIdx = i; break; }
             }
-            // Fallback: sisipkan sebelum 5 paragraf terakhir
-            if (insertIndex === allParagraphs.length) {
-              insertIndex = Math.max(0, allParagraphs.length - 5);
-            }
-
-            allParagraphs.splice(insertIndex, 0, ...expansion.paragraphs);
-            totalWords = countLatinWords(allParagraphs);
-            console.log(`[Ekspansi ${expansionAttempt}] +${expansion.paragraphs.length} paragraf. Total kata sekarang: ${totalWords}`);
+            if (insertIdx === allParagraphs.length) insertIdx = Math.max(0, allParagraphs.length - 5);
+            allParagraphs.splice(insertIdx, 0, ...expParas);
+            totalWords = countEffectiveWords(allParagraphs);
+            console.log(`[Ekspansi] +${expParas.length} paragraf. Total kata: ${totalWords}`);
           }
         } catch (exErr: any) {
-          console.warn(`[Ekspansi ${expansionAttempt}] Gagal: ${exErr.message}. Melanjutkan dengan konten yang ada.`);
-          break; // Jangan coba ekspansi lagi jika gagal
+          console.warn(`[Ekspansi] Gagal: ${exErr.message}. Melanjutkan.`);
         }
       }
 
-      console.log(`[Selesai] Artikel final: ${totalWords} kata Latin, ${allParagraphs.length} paragraf.`);
+      // === TAHAP 4: Generate Daftar Rujukan dari konten nyata (#2) ===
+      if (onProgress) onProgress(75, `[4/5] Menyusun Daftar Rujukan...`);
+      await rateLimitDelay(5000);
+
+      const articleText = allParagraphs.map(p => `[${p.type}] ${p.text}`).join('\n');
+      const refPrompt = `Berikut adalah artikel lengkap yang sudah ditulis tentang "${topic}":
+
+---
+${articleText}
+---
+
+Tugas Anda: Baca artikel di atas dan KOMPILASI Daftar Rujukan berdasarkan SEMUA sumber yang BENAR-BENAR dikutip di dalamnya.
+
+FORMAT SETIAP ENTRI RUJUKAN:
+1. Al-Qur'an: Cukup satu entri "Al-Qur'an Al-Karim".
+2. Hadits: "Kitab [Nama Kitab] karya [Periwayat/Penulis], derajat: Shahih" — misalnya Shahih Al-Bukhari karya Imam Al-Bukhari.
+3. Tafsir: "Kitab [Nama Tafsir] karya [Penulis]" — misalnya Tafsir Al-Qur'an Al-'Azhim karya Ibnu Katsir.
+4. Kitab Syarah: "Kitab [Nama] karya [Penulis]".
+5. Kitab/Fatwa Ulama: "Kitab [Nama] karya [Penulis]" atau "Fatwa [Lembaga/Ulama]".
+
+ATURAN KETAT:
+- HANYA cantumkan sumber yang BENAR-BENAR muncul/dikutip dalam artikel di atas.
+- JANGAN mengarang nama kitab, penerbit, atau halaman yang tidak ada dalam artikel.
+- Urutkan: Al-Qur'an → Hadits → Tafsir → Kitab Ulama → Fatwa.
+
+Output JSON: { "paragraphs": [ { "type": "latin", "text": "Daftar Rujukan", "bold": true, "align": "center" }, { "type": "latin", "text": "1. ...", "bold": false, "align": "justify" } ] }`;
+
+      try {
+        console.log(`[Tahap 4/5] Generate Daftar Rujukan dari konten nyata...`);
+        const refRaw = await generateArticlePart(ai, modelName, refPrompt, sysInstruction);
+        const refParas = validateAndCleanParagraphs(refRaw);
+        if (refParas.length > 0) {
+          allParagraphs.push(...refParas);
+          console.log(`[Tahap 4/5] Selesai. +${refParas.length} paragraf rujukan.`);
+        }
+      } catch (refErr: any) {
+        console.warn(`[Rujukan] Gagal: ${refErr.message}. Melanjutkan tanpa rujukan terpisah.`);
+      }
+
+      // === TAHAP 5: Hitung statistik kualitas (#11) ===
+      if (onProgress) onProgress(90, `[5/5] Memvalidasi kualitas artikel...`);
+      const stats = computeStats(allParagraphs);
+      console.log(`[Selesai] Artikel final: ${stats.totalLatinWords} kata Latin, ${stats.totalEffectiveWords} kata efektif, ${stats.totalParagraphs} paragraf, ${stats.ayatCount} ayat, ${stats.haditsCount} hadits, ${stats.ulamaQuoteCount} kutipan ulama, rasio dalil ${stats.dalilRatio}%`);
+
       if (onProgress) onProgress(100, `Selesai! Menyiapkan dokumen...`);
 
       return {
-        title: part1.title || "Artikel Dakwah Kajian Islam",
-        paragraphs: allParagraphs
+        title: part1Raw.title || "Artikel Dakwah Kajian Islam",
+        paragraphs: allParagraphs,
+        stats,
       };
 
     } catch (e: any) {
       lastError = e;
       const msg = (e.message || String(e)).toLowerCase();
-      
       if (msg.includes('404') || msg.includes('not found')) {
         console.warn(`[Gemini Fallback] Model ${modelName} tidak ditemukan. Beralih model...`);
         continue;
       }
-
       console.warn(`[Gemini Fallback] Model ${modelName} gagal. Error: ${e.message}`);
     }
   }
