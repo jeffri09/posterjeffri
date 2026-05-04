@@ -22,6 +22,7 @@ export const generatePosterContent = async (topic: string): Promise<Partial<Post
     Buat konten poster dakwah ringkas, terstruktur & visual premium untuk topik: "${topic}".
 
     **DALIL:** Seleksi dalil manhaj salaf SANGAT KETAT:
+    0. DILARANG KERAS MENGARANG ATAU MEMALSUKAN DALIL/HADITS. Hanya gunakan dalil yang Anda yakini kesahihannya 100%.
     1. WAJIB utamakan Ayat Al-Qur'an dan Teks Al-Qur'an WAJIB menggunakan rasm Utsmani (standar Mushaf Madinah)
     2. Jika menggunakan Hadits, WAJIB Hadits Shahih (seperti Bukhari/Muslim).
     3. Terjemahan WAJIB sesuai pemahaman manhaj salaf atau ulama manhaj salaf seperti Ibnu Katsir, At-Thabari, Al-Baghawi, dan As-Sa'di.
@@ -61,7 +62,9 @@ export const generatePosterContent = async (topic: string): Promise<Partial<Post
           model: modelName,
           contents: prompt,
           config: {
-            responseMimeType: 'application/json'
+            responseMimeType: 'application/json',
+            temperature: 0.1, // Sangat ketat, anti-halusinasi
+            topP: 0.8
           }
         });
 

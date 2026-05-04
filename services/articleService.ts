@@ -32,6 +32,7 @@ export const generateArticleContent = async (topic: string, reference?: string):
     ${reference ? `\nReferensi atau rujukan materi yang diberikan pengguna:\n"${reference}"\nEksplorasi dan elaborasi referensi ini secara maksimal menjadi paragraf-paragraf yang panjang.` : ''}
 
     ATURAN KETAT (WAJIB DIIKUTI):
+    0. DILARANG KERAS MENGARANG (HALUSINASI) ISI, FATWA, ATAU DALIL. Anda harus bertindak secara ilmiah dan amanah secara ilmiah. Jika Anda tidak tahu dalil atau pendapat ulama yang sahih tentang suatu sub-topik, JANGAN ditulis. Kutip hanya yang pasti benar.
     1. Takhrij Hadits WAJIB Shahih (seperti riwayat Bukhari dan Muslim). DILARANG KERAS menggunakan hadits dha'if atau maudhu'.
     2. Rujukan pemahaman, kutipan, atau tafsir WAJIB merujuk pada: 
        - Ulama Salaf: Tafsir Ibnu Katsir, At-Thabari, Al-Baghawi, As-Sa'di, Syaikhul Islam Ibnu Taimiyah, Ibnul Qayyim al-Jauziyyah.
@@ -87,7 +88,9 @@ export const generateArticleContent = async (topic: string, reference?: string):
           model: modelName,
           contents: prompt,
           config: {
-            responseMimeType: 'application/json'
+            responseMimeType: 'application/json',
+            temperature: 0.1, // Sangat ketat, tidak mengarang bebas
+            topP: 0.8
           }
         });
 
