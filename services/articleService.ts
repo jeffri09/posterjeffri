@@ -114,18 +114,19 @@ export const generateArticleContent = async (
 
     ATURAN KETAT (WAJIB DIIKUTI):
     0. DILARANG KERAS MENGARANG (HALUSINASI) ISI, FATWA, ATAU DALIL. Anda harus bertindak secara ilmiah dan amanah.
-    1. Takhrij Hadits WAJIB Shahih (Bukhari dan Muslim dll). DILARANG menggunakan hadits dha'if.
-    2. Rujukan WAJIB merujuk pada: Ibnu Taimiyah, Ibnul Qayyim, Syaikh Bin Baz, Syaikh Al-Albani, Syaikh Al-Utsaimin, Syaikh Shalih al-Fauzan, Lajnah Da'imah (khusus muamalah kontemporer), dan kitab-kitab tafsir salaf.
-    3. Teks Al-Qur'an (Arab) WAJIB rasm Utsmani.
-    4. REFERENSI DALIL GANDA: WAJIB mencantumkan referensi dalil (Misal: "(QS. Al-Baqarah: 275)") di AKHIR TEKS ARAB (dengan huruf latin) dan di AKHIR TEKS TERJEMAHAN.
-    5. KUTIPAN & FOOTNOTE HARUS FAKTUAL: Saat mengutip ulama, tafsir, atau fatwa, WAJIB sertakan sumber buku/kitab asli secara rinci, termasuk nama kitab, jilid (jika ada), bab, atau nomor fatwa yang spesifik (misal: "Majmu' Fatawa, Jilid 10, Hal 250" atau "Tafsir Ibnu Katsir, Surat Al-Baqarah ayat 275"). JANGAN PERNAH MENGGUNAKAN TEMPLATE PALSU/MENGARANG SUMBER. Jika Anda tidak tahu halaman pastinya, sebutkan nama kitab dan bab pembahasannya secara spesifik.
+    1. Takhrij Hadits WAJIB Shahih (Bukhari dan Muslim dll). DILARANG menggunakan hadits dha'if atau maudhu'. Jika tidak ada hadits spesifik, gunakan hadits keumuman syariat.
+    2. Rujukan WAJIB merujuk pada: Sahabat, Tabi'in, Ulama Salaf, Ibnu Taimiyah, Ibnul Qayyim, Syaikh Bin Baz, Syaikh Al-Albani, Syaikh Al-Utsaimin, Syaikh Shalih al-Fauzan, Lajnah Da'imah, dan kitab-kitab tafsir mu'tabar.
+    3. Teks Al-Qur'an (Arab) WAJIB rasm Utsmani dan teks Hadits WAJIB teks asli Arabnya.
+    4. REFERENSI DALIL GANDA: WAJIB mencantumkan referensi dalil di AKHIR TEKS ARAB (dengan huruf latin) dan di AKHIR TEKS TERJEMAHAN.
+    5. KUTIPAN & FOOTNOTE HARUS FAKTUAL: JANGAN PERNAH MENGARANG ANGKA JILID/HALAMAN ATAU NOMOR HADITS. Jika Anda tidak yakin 100% dengan nomor/halamannya, CUKUP SEBUTKAN NAMA KITAB DAN BAB PEMBAHASAN ATAU NAMA PENGARANGNYA SAJA. DILARANG MENGARANG REFERENSI YANG TIDAK ADA HUBUNGANNYA DENGAN TOPIK.
 
-    ATURAN MENULIS PARAGRAF:
+    ATURAN MENULIS PARAGRAF & PENCAPAIAN PANJANG ARTIKEL:
     - Pisahkan teks Arab dan teks Latin ke dalam objek 'paragraphs' yang BERBEDA.
     - Gunakan properti "bold": true untuk sub-judul.
     - Gunakan properti "align": "center" untuk judul bagian, "justify" untuk paragraf biasa, dan "right" untuk arabic.
-    - SETIAP paragraf Latin WAJIB PANJANG, minimal 4-6 kalimat (sekitar 100-200 kata). DILARANG KERAS menulis paragraf pendek 1-2 kalimat.
-    - Untuk setiap poin yang dibahas, WAJIB jelaskan: (a) konteksnya, (b) dalil pendukung, (c) penjelasan ulama, (d) kesimpulan faedahnya.
+    - FOKUS PADA DALIL & ATSAR: Untuk mencapai target panjang 4000 kata, PERBANYAK jumlah dalil Al-Qur'an, Hadits, Atsar Sahabat, dan perkataan Ulama Salaf (beserta teks Arabnya). 
+    - DILARANG KERAS memperpanjang artikel dengan opini pribadi, karangan bebas, atau retorika latin yang bertele-tele. Artikel harus terasa seperti kitab ulama salaf yang padat dengan nukilan (qola Allah, qola Rasul, qola ulama).
+    - Untuk setiap poin yang dibahas, WAJIB jelaskan: (a) konteksnya, (b) dalil pendukung (Arab & terjemah), (c) penjelasan ulama (syarah/tafsir asli), (d) kesimpulan faedahnya.
   `;
 
   const part1Prompt = `
@@ -133,17 +134,17 @@ export const generateArticleContent = async (
     Tugas Anda SEKARANG: Buat BAGIAN PERTAMA (dari 3 bagian). Target bagian ini: MINIMAL 1300 KATA LATIN.
     Bagian ini mencakup 2 bab:
 
-    BAB 1: PENDAHULUAN (Tulis MINIMAL 7 paragraf panjang, total ~700 kata)
-    Bahas secara mendalam dan elaboratif:
+    BAB 1: PENDAHULUAN (Fokus pada pengantar ilmiah)
+    Bahas secara mendalam namun padat dengan rujukan kebenaran:
     - Kondisi umat Islam hari ini terkait topik "${topic}" dan fenomena penyimpangan yang terjadi.
     - Urgensi dan latar belakang mengapa topik ini sangat penting untuk dibahas secara ilmiah.
-    - Gambaran umum bagaimana para ulama salaf memandang topik ini.
+    - Gambaran umum bagaimana para ulama salaf memandang topik ini (sertakan nukilan perkataan ulama jika ada).
     - Tujuan penulisan artikel ini dan manfaatnya bagi pembaca.
 
-    BAB 2: DEFINISI & HAKIKAT (Tulis MINIMAL 7 paragraf panjang, total ~600 kata)
+    BAB 2: DEFINISI & HAKIKAT (Kutip pendapat para ulama bahasa dan syar'i)
     Jelaskan secara menyeluruh:
     - Definisi secara bahasa (etimologi/lughawi) dengan akar kata Arabnya.
-    - Definisi secara istilah (terminologi/ishtilahi) menurut beberapa ulama.
+    - Definisi secara istilah (terminologi/ishtilahi) menurut penjelasan para ulama (sertakan teks Arab kutipannya).
     - Hakikat dan ruang lingkup topik ini dalam tinjauan syariat Islam.
     - Perbedaan istilah-istilah terkait yang sering dicampuradukkan masyarakat.
 
@@ -163,20 +164,20 @@ export const generateArticleContent = async (
     Tugas Anda SEKARANG: Buat BAGIAN KEDUA (dari 3 bagian). Target bagian ini: MINIMAL 1500 KATA LATIN.
     Bagian ini mencakup 2 bab:
 
-    BAB 3: DALIL AL-QUR'AN & TAFSIR RINCI (Tulis MINIMAL 10 paragraf panjang, total ~750 kata Latin)
-    Struktur PER AYAT (kutip MINIMAL 5 ayat):
+    BAB 3: DALIL AL-QUR'AN & TAFSIR RINCI (Kutip SEBANYAK MUNGKIN ayat yang relevan, MINIMAL 7-10 ayat)
+    Struktur PER AYAT (ulangi untuk setiap ayat):
     1. Paragraf sub-judul ayat (bold, center)
-    2. Teks Arab ayat dengan rasm Utsmani (type: arabic, align: right) — akhiri dengan referensi latin seperti "(QS. Al-Baqarah: 275)"
+    2. Teks Arab ayat dengan rasm Utsmani (type: arabic, align: right) — akhiri dengan referensi latin "(QS. Nama Surat: Ayat)"
     3. Paragraf terjemahan ayat dalam bahasa Indonesia (type: latin, justify)
-    4. Paragraf penjelasan tafsir yang PANJANG (4-6 kalimat), mengutip pendapat Ibnu Katsir, At-Thabari, As-Sa'di, atau Al-Baghawi.
-    5. Paragraf faedah dan pelajaran dari ayat tersebut (4-6 kalimat).
+    4. Paragraf penjelasan tafsir, MENGUTIP LANGSUNG perkataan ahli tafsir (seperti Ibnu Katsir, As-Sa'di, dll) tanpa mengarang nomor halaman.
+    5. Paragraf faedah dan pelajaran ringkas dari ayat tersebut.
 
-    BAB 4: DALIL HADITS & SYARAH RINCI (Tulis MINIMAL 10 paragraf panjang, total ~750 kata Latin)
-    Struktur PER HADITS (kutip MINIMAL 5 hadits shahih):
+    BAB 4: DALIL HADITS & SYARAH RINCI (Kutip SEBANYAK MUNGKIN hadits shahih, MINIMAL 7-10 hadits)
+    Struktur PER HADITS (ulangi untuk setiap hadits):
     1. Paragraf sub-judul hadits (bold, center)
-    2. Teks Arab matan hadits (type: arabic, align: right) — akhiri dengan referensi latin seperti "(HR. Bukhari no. 1234)"
+    2. Teks Arab matan hadits (type: arabic, align: right) — akhiri dengan referensi latin "(HR. Bukhari / Muslim / dll)"
     3. Paragraf terjemahan hadits (type: latin, justify)
-    4. Paragraf syarah/penjelasan hadits yang PANJANG (4-6 kalimat), menjelaskan kandungan, konteks, dan faedah.
+    4. Paragraf syarah/penjelasan hadits, MENGUTIP LANGSUNG penjelasan ulama dari kitab syarah (seperti Fathul Bari, Syarah Nawawi, dll).
 
     PENTING: Output WAJIB JSON murni HANYA BERISI ARRAY PARAGRAPHS:
     {
@@ -193,25 +194,23 @@ export const generateArticleContent = async (
     Tugas Anda SEKARANG: Buat BAGIAN KETIGA (TERAKHIR). Target bagian ini: MINIMAL 1500 KATA LATIN.
     Bagian ini mencakup 3 bab:
 
-    BAB 5: FATWA & PANDANGAN ULAMA SALAF/KONTEMPORER (MINIMAL 8 paragraf panjang, total ~600 kata Latin)
-    Paparkan secara terperinci pandangan masing-masing ulama berikut (setiap ulama MINIMAL 1 paragraf panjang 4-6 kalimat):
-    - Syaikh Abdul Aziz bin Baz rahimahullah
-    - Syaikh Muhammad bin Shalih Al-Utsaimin rahimahullah
-    - Syaikh Muhammad Nashiruddin Al-Albani rahimahullah
-    - Syaikh Shalih bin Fauzan Al-Fauzan hafizhahullah
-    - Keputusan Lajnah Da'imah lil Ifta (jika ada fatwa terkait)
-    Jika ada ucapan ulama dalam bahasa Arab, pisahkan ke paragraf type: arabic.
+    BAB 5: ATSAR SALAF & PANDANGAN ULAMA (Kutip BANYAK Atsar Sahabat, Tabi'in, dan Ulama)
+    Paparkan secara terperinci pandangan para ulama berikut beserta TEKS ARAB ucapan mereka jika memungkinkan:
+    - Perkataan Sahabat Nabi dan Tabi'in yang relevan dengan topik.
+    - Perkataan ulama salaf terdahulu (Imam Ahmad, Syafi'i, Ibnu Taimiyah, Ibnul Qayyim, dll).
+    - Fatwa ulama kontemporer (Syaikh Bin Baz, Syaikh Al-Utsaimin, Syaikh Al-Albani, Syaikh Shalih Al-Fauzan, Lajnah Da'imah).
+    *Setiap kutipan WAJIB menyertakan nama ulama atau kitab, JANGAN mengarang nomor halaman jika tidak yakin. Pisahkan ucapan Arab ke paragraf type: arabic.
 
-    BAB 6: HUKUM CABANG & STUDI KASUS KONTEMPORER (MINIMAL 8 paragraf panjang, total ~500 kata Latin)
-    Bahas secara mendalam:
-    - Hukum-hukum turunan/cabang dari topik utama (minimal 3 hukum cabang, masing-masing 1-2 paragraf).
+    BAB 6: HUKUM CABANG & STUDI KASUS (Berdasarkan Fatwa Ulama)
+    Bahas secara ilmiah dan berlandaskan dalil:
+    - Hukum-hukum turunan/cabang dari topik utama (minimal 3 hukum cabang).
     - Studi kasus kontemporer: contoh nyata implementasi di kehidupan masa kini (minimal 2 kasus).
-    - Panduan praktis bagi umat Islam dalam mengamalkan topik ini.
+    - Panduan praktis bagi umat Islam dalam mengamalkan topik ini sesuai sunnah.
 
-    BAB 7: KESIMPULAN & PENUTUP (MINIMAL 4 paragraf panjang, total ~400 kata Latin)
-    - Rangkum seluruh pembahasan dari Bab 1 hingga Bab 6 secara komprehensif.
-    - Sampaikan nasihat dan motivasi penutup.
-    - Paragraf TERAKHIR WAJIB berisi "Daftar Rujukan/Referensi" yang FAKTUAL dari kitab-kitab yang benar-benar telah Anda kutip di atas (sertakan Judul Kitab, Penulis, Bab/Jilid, atau Lembaga Fatwa). DILARANG KERAS memakai kalimat template statis seperti "Diringkas dari buku Majmu Fatawa...". Tuliskan sumbernya sesuai fakta dan data kutipan tulisan Anda.
+    BAB 7: KESIMPULAN & PENUTUP
+    - Rangkum seluruh poin dalil dari Bab 1 hingga Bab 6.
+    - Sampaikan nasihat dan motivasi penutup bersandarkan dalil.
+    - Paragraf TERAKHIR WAJIB berisi "Daftar Rujukan/Referensi" yang FAKTUAL dari nama-nama kitab ulama yang Anda kutip di atas. DILARANG KERAS mencantumkan rujukan fiktif, angka jilid karangan, atau referensi yang tidak berhubungan dengan isi materi. Tuliskan saja "Kitab [Nama Kitab] karya [Nama Penulis]" tanpa nomor halaman/jilid fiktif.
 
     PENTING: Output WAJIB JSON murni HANYA BERISI ARRAY PARAGRAPHS:
     {
@@ -288,17 +287,15 @@ export const generateArticleContent = async (
           Artikel tentang topik "${topic}" SUDAH ditulis tetapi MASIH KURANG PANJANG.
           Status: baru ${totalWords} kata Latin, butuh minimal 3500 kata, kurang ~${kekurangan} kata lagi.
           
-          Tugas Anda: Tulis TAMBAHAN konten BARU untuk memperpanjang artikel. JANGAN mengulang yang sudah ada.
-          Anda WAJIB menambahkan dari opsi berikut (pilih yang paling relevan dan belum dibahas):
-          - Faedah-faedah tambahan dari topik "${topic}" yang belum dibahas
-          - Penjelasan lebih mendalam tentang implementasi praktis di kehidupan sehari-hari
-          - Adab-adab terkait topik yang belum disebutkan
-          - Kisah atau atsar salaf yang shahih terkait topik
-          - Hukum-hukum cabang tambahan dan studi kasus
-          - Dalil-dalil tambahan (ayat/hadits) beserta penjelasan panjangnya
+          Tugas Anda: Tulis TAMBAHAN konten BARU berupa KUMPULAN DALIL, ATSAR, ATAU FATWA ULAMA untuk memperpanjang artikel. JANGAN menambahkan opini atau karangan bebas latin.
+          Anda WAJIB menambahkan dari opsi berikut (pilih yang belum dibahas):
+          - Dalil-dalil tambahan (ayat/hadits) beserta teks Arab dan tafsir/syarahnya
+          - Kisah atau atsar salaf yang shahih terkait topik beserta teks Arabnya
+          - Fatwa-fatwa tambahan dari para ulama
+          - Hukum-hukum cabang tambahan berlandaskan dalil
           
-          Target: Tulis MINIMAL ${Math.max(kekurangan, 800)} KATA LATIN.
-          SETIAP paragraf WAJIB panjang (4-6 kalimat, ~100-200 kata).
+          Target: Tambahkan konten HINGGA mencapai panjang minimal yang diminta.
+          PERBANYAK TEKS ARAB (AYAT, HADITS, PERKATAAN ULAMA) DAN TERJEMAHANNYA UNTUK MENCAPAI TARGET PANJANG INI, BUKAN DENGAN MENGARANG OPINI.
 
           Output WAJIB JSON murni:
           {
