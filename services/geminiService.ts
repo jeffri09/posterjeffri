@@ -16,17 +16,17 @@ const getAiClient = () => {
  */
 export const generatePosterContent = async (topic: string): Promise<Partial<PosterFormData>> => {
   const ai = getAiClient();
-  
+
   const prompt = `
     Anda adalah Ustadz bermanhaj Salaf & Art Director Profesional.
     Buat konten poster dakwah ringkas, terstruktur & visual premium untuk topik: "${topic}".
 
     **DALIL:** Seleksi dalil manhaj salaf SANGAT KETAT:
-    1. WAJIB utamakan Ayat Al-Qur'an.
+    1. WAJIB utamakan Ayat Al-Qur'an dan Teks Al-Qur'an WAJIB menggunakan rasm Utsmani (standar Mushaf Madinah)
     2. Jika menggunakan Hadits, WAJIB Hadits Shahih (seperti Bukhari/Muslim).
-    3. Terjemahan WAJIB sesuai pemahaman manhaj salaf atau ulama manhaj salaf seperti Ibnu Katsir.
+    3. Terjemahan WAJIB sesuai pemahaman manhaj salaf atau ulama manhaj salaf seperti Ibnu Katsir, At-Thabari, Al-Baghawi, dan As-Sa'di.
     4. WAJIB cantumkan sumber/referensi dalil (misal: "QS. Al-Baqarah: 123" atau "HR. Bukhari & Muslim") tepat di akhir teks "quoteTranslation", diletakkan di dalam tanda kurung. Contoh: "Allah tidak menerima shalat... (HR. Bukhari & Muslim)".
-    **JUDUL:** Maks 5 kata (Emotional hook menarik).
+    **JUDUL:** Maks 6 kata (Emotional hook menarik).
     **NASIHAT:** Maks 2 kalimat singkat yang menyentuh hati.
     **VISUAL:** Deskripsi background ringkas (1-2 kalimat). WAJIB adaptif dengan topik (misal: gurun untuk sabar, api untuk neraka). Desain premium, banyak negative space. Jika ada manusia/hewan, WAJIB siluet/kartun tanpa wajah.
     **PALET WARNA:** Tentukan warna Dominan, Aksen, & Mood.
@@ -43,8 +43,8 @@ export const generatePosterContent = async (topic: string): Promise<Partial<Post
 
   const savedModel = localStorage.getItem('geminiModel');
   const modelsToTry = savedModel ? [savedModel, 'gemini-3.1-flash-lite-preview', 'gemini-2.5-flash'] : [
-    'gemini-3.1-flash-lite-preview', 
-    'gemini-2.5-flash-lite', 
+    'gemini-3.1-flash-lite-preview',
+    'gemini-2.5-flash-lite',
     'gemini-2.5-flash'
   ];
   let lastError: any = null;
@@ -56,7 +56,7 @@ export const generatePosterContent = async (topic: string): Promise<Partial<Post
         const timeoutPromise = new Promise((_, reject) => {
           setTimeout(() => reject(new Error("Request timeout setelah 20 detik")), 20000);
         });
-        
+
         const fetchPromise = ai.models.generateContent({
           model: modelName,
           contents: prompt,
@@ -78,7 +78,7 @@ export const generatePosterContent = async (topic: string): Promise<Partial<Post
       } catch (e: any) {
         lastError = e;
         const msg = (e.message || String(e)).toLowerCase();
-        
+
         // Pengecualian: Jika model tidak ada (404), langsung beralih ke model berikutnya.
         if (msg.includes('404') || msg.includes('not found')) {
           console.warn(`[Gemini Fallback] Model ${modelName} tidak ditemukan. Beralih model...`);
@@ -87,7 +87,7 @@ export const generatePosterContent = async (topic: string): Promise<Partial<Post
 
         retries--;
         console.warn(`[Gemini Fallback] Gagal (${modelName}). Sisa percobaan: ${retries}. Error: ${e.message}`);
-        
+
         if (retries > 0) {
           // Tunggu 1 detik sebelum mencoba lagi untuk menghindari rate limit
           await new Promise(r => setTimeout(r, 1000));

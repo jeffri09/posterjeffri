@@ -3,7 +3,7 @@
 // ═══════════════════════════════════════
 
 // --- App Navigation ---
-export type AppTab = 'generator' | 'watermark' | 'settings';
+export type AppTab = 'generator' | 'artikel' | 'settings';
 
 // --- Poster Category ---
 export type PosterCategory = 'dakwah';
@@ -43,44 +43,7 @@ export const INITIAL_FORM_DATA: PosterFormData = {
   colorPalette: "Dominan: Hijau Zamrud (#1B4332)\nAksen: Emas (#D4A853)\nBrand Footer: Biru Tua (#0E2F73)\nMood: Penuh harapan, berkah"
 };
 
-// --- Watermark Types ---
-export type WatermarkMethod = 
-  | 'gemini-splash' 
-  | 'nanobanana'
-  | 'cloud-ai'
-  | 'alpha-composite' 
-  | 'frequency-perturbation'
-  | 'smart-noise'
-  | 'combined'
-  | 'advanced-inpaint';
-
-export interface WatermarkConfig {
-  method: WatermarkMethod;
-  intensity: number;        // 0-100
-  preserveQuality: boolean;
-  stripMetadata: boolean;
-  outputFormat: 'png' | 'jpeg' | 'webp';
-  outputQuality: number;    // 0-100
-}
-
-export const DEFAULT_WATERMARK_CONFIG: WatermarkConfig = {
-  method: 'gemini-splash',
-  intensity: 70,
-  preserveQuality: true,
-  stripMetadata: true,
-  outputFormat: 'png',
-  outputQuality: 95,
-};
-
-// --- Watermark Processing State ---
-export interface WatermarkState {
-  originalImage: string | null;
-  processedImage: string | null;
-  isProcessing: boolean;
-  fileName: string | null;
-  fileSize: number;
-  progress: number;
-}
+// Removed Watermark Types
 
 // --- Prompt Generation Context ---
 export interface PromptContext {

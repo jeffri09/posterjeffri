@@ -29,13 +29,13 @@ LANGKAH 1 — ANALISIS TOPIK:
 → Emosi apa yang ingin dibangkitkan? (Takut? Harap? Syukur? Taubat?)
 
 LANGKAH 2 — SELEKSI DALIL (Manhaj Salaf SANGAT KETAT):
-→ PERTAMA: WAJIB utamakan Ayat Al-Qur'an yang paling relevan
-→ KEDUA: Jika Hadits, WAJIB Hadits SHAHIH (seperti riwayat Bukhari/Muslim)
-→ KETIGA: Terjemahan WAJIB sesuai pemahaman manhaj salaf atau ulama manhaj salaf seperti Ibnu Katsir
+→ PERTAMA: WAJIB utamakan Ayat Al-Qur'an yang paling relevan dan Teks Al-Qur'an WAJIB menggunakan rasm Utsmani (standar Mushaf Madinah)
+→ KEDUA: Jika Hadits, WAJIB Hadits SHAHIH (seperti riwayat Bukhari/Muslim) dan DILARANG keras mencantumkan hadis dha’if (lemah) apalagi palsu (maudhu')
+→ KETIGA: Terjemahan WAJIB sesuai pemahaman manhaj salaf atau ulama manhaj salaf seperti Ibnu Katsir, At-Thabari, Al-Baghawi, dan As-Sa'di
 → KEEMPAT: Tuliskan referensi/sumber dalil dengan jelas di akhir terjemahan (contoh: "... hingga ia berwudhu. (HR. Bukhari & Muslim)")
 
 LANGKAH 3 — FORMULASI PESAN:
-→ Judul: Buat HOOK emosional dalam ≤5 kata
+→ Judul: Buat HOOK emosional dalam ≤6 kata
 → Nasihat: Buat penjelasan yang menyentuh hati dalam 2-3 kalimat
 → Pastikan koherensi: Judul ↔ Dalil ↔ Nasihat harus satu alur
 
@@ -514,29 +514,29 @@ BREAKDOWN ELEMEN YANG DIBUTUHKAN:
 // TECHNIQUE REGISTRY — Maps ID to function
 // ══════════════════════════════════════════════
 export const TECHNIQUE_GENERATORS: Record<string, (data: PosterFormData) => string> = {
-  'role-context': techniqueRoleContext,
-  'cot': techniqueChainOfThought,
-  'tot': techniqueTreeOfThoughts,
-  'step-back': techniqueStepBack,
-  'react': techniqueReAct,
-  'got': techniqueGraphOfThoughts,
-  'few-shot': techniqueFewShot,
-  'zero-shot': techniqueZeroShot,
-  'scamper': techniqueSCAMPER,
-  'persona-problem': techniquePersonaProblem,
-  'what-if': techniqueWhatIf,
-  'generate-knowledge': techniqueGenerateKnowledge,
-  'rag': techniqueRAG,
-  'directional-stimulus': techniqueDirectionalStimulus,
-  'instruction': techniqueInstruction,
-  'meta-prompting': techniqueMetaPrompting,
-  'least-to-most': techniqueLeastToMost,
-  'skeleton-of-thought': techniqueSkeletonOfThought,
-  'prompt-chaining': techniquePromptChaining,
-  'pal': techniquePAL,
-  'active-prompt': techniqueActivePrompt,
-  'self-consistency': techniqueSelfConsistency,
-  'reflexion': techniqueReflexion,
-  'competitive-gap': techniqueCompetitiveGap,
-  'reverse-engineering': techniqueReverseEngineering,
+   'role-context': techniqueRoleContext,
+   'cot': techniqueChainOfThought,
+   'tot': techniqueTreeOfThoughts,
+   'step-back': techniqueStepBack,
+   'react': techniqueReAct,
+   'got': techniqueGraphOfThoughts,
+   'few-shot': techniqueFewShot,
+   'zero-shot': techniqueZeroShot,
+   'scamper': techniqueSCAMPER,
+   'persona-problem': techniquePersonaProblem,
+   'what-if': techniqueWhatIf,
+   'generate-knowledge': techniqueGenerateKnowledge,
+   'rag': techniqueRAG,
+   'directional-stimulus': techniqueDirectionalStimulus,
+   'instruction': techniqueInstruction,
+   'meta-prompting': techniqueMetaPrompting,
+   'least-to-most': techniqueLeastToMost,
+   'skeleton-of-thought': techniqueSkeletonOfThought,
+   'prompt-chaining': techniquePromptChaining,
+   'pal': techniquePAL,
+   'active-prompt': techniqueActivePrompt,
+   'self-consistency': techniqueSelfConsistency,
+   'reflexion': techniqueReflexion,
+   'competitive-gap': techniqueCompetitiveGap,
+   'reverse-engineering': techniqueReverseEngineering,
 };

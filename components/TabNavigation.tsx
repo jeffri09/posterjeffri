@@ -9,7 +9,7 @@ interface TabNavigationProps {
 export const TabNavigation: React.FC<TabNavigationProps> = ({ activeTab, onTabChange }) => {
   const tabs: { id: AppTab; label: string; icon: string }[] = [
     { id: 'generator', label: 'Prompt Generator', icon: '✨' },
-    { id: 'watermark', label: 'Watermark Remover', icon: '🧹' },
+    { id: 'artikel', label: 'Artikel Salaf', icon: '📄' },
     { id: 'settings', label: 'Pengaturan', icon: '⚙️' },
   ];
 

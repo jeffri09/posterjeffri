@@ -11,7 +11,7 @@ import { generatePosterContent } from './services/geminiService';
 import { PRESET_TECHNIQUE_IDS } from './constants/techniques';
 import { TabNavigation } from './components/TabNavigation';
 import { TechniqueSelector } from './components/TechniqueSelector';
-import { WatermarkRemover } from './components/WatermarkRemover';
+import { ArticleGenerator } from './components/ArticleGenerator';
 import { InputGroup } from './components/InputGroup';
 import { Settings } from './components/Settings';
 
@@ -447,10 +447,10 @@ const App: React.FC = () => {
           </div>
         </div>
 
-      ) : activeTab === 'watermark' ? (
-        /* ═══ WATERMARK REMOVER TAB ═══ */
+      ) : activeTab === 'artikel' ? (
+        /* ═══ ARTIKEL SALAF TAB ═══ */
         <div style={{ flex: 1, overflow: 'hidden' }}>
-          <WatermarkRemover />
+          <ArticleGenerator />
         </div>
       ) : (
         /* ═══ SETTINGS TAB ═══ */
