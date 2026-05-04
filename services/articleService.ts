@@ -87,7 +87,11 @@ const generateArticlePart = async (
   throw new Error(lastError?.message || "Gagal memproses bagian artikel.");
 };
 
-export const generateArticleContent = async (topic: string, reference?: string): Promise<ArticleContent> => {
+export const generateArticleContent = async (
+  topic: string, 
+  reference?: string,
+  onProgress?: (percent: number, message: string) => void
+): Promise<ArticleContent> => {
   const ai = getAiClient();
   const savedModel = localStorage.getItem('geminiModel');
   const modelsToTry = savedModel ? [savedModel, 'gemini-3.1-flash-lite-preview', 'gemini-2.5-flash'] : [
@@ -114,6 +118,7 @@ export const generateArticleContent = async (topic: string, reference?: string):
     2. Rujukan WAJIB merujuk pada: Ibnu Taimiyah, Ibnul Qayyim, Syaikh Bin Baz, Syaikh Al-Albani, Syaikh Al-Utsaimin, Syaikh Shalih al-Fauzan, Lajnah Da'imah (khusus muamalah kontemporer), dan kitab-kitab tafsir salaf.
     3. Teks Al-Qur'an (Arab) WAJIB rasm Utsmani.
     4. REFERENSI DALIL GANDA: WAJIB mencantumkan referensi dalil (Misal: "(QS. Al-Baqarah: 275)") di AKHIR TEKS ARAB (dengan huruf latin) dan di AKHIR TEKS TERJEMAHAN.
+    5. KUTIPAN & FOOTNOTE HARUS FAKTUAL: Saat mengutip ulama, tafsir, atau fatwa, WAJIB sertakan sumber buku/kitab asli secara rinci, termasuk nama kitab, jilid (jika ada), bab, atau nomor fatwa yang spesifik (misal: "Majmu' Fatawa, Jilid 10, Hal 250" atau "Tafsir Ibnu Katsir, Surat Al-Baqarah ayat 275"). JANGAN PERNAH MENGGUNAKAN TEMPLATE PALSU/MENGARANG SUMBER. Jika Anda tidak tahu halaman pastinya, sebutkan nama kitab dan bab pembahasannya secara spesifik.
 
     ATURAN MENULIS PARAGRAF:
     - Pisahkan teks Arab dan teks Latin ke dalam objek 'paragraphs' yang BERBEDA.
@@ -206,7 +211,7 @@ export const generateArticleContent = async (topic: string, reference?: string):
     BAB 7: KESIMPULAN & PENUTUP (MINIMAL 4 paragraf panjang, total ~400 kata Latin)
     - Rangkum seluruh pembahasan dari Bab 1 hingga Bab 6 secara komprehensif.
     - Sampaikan nasihat dan motivasi penutup.
-    - Paragraf TERAKHIR WAJIB berisi sumber: "Diringkas dari buku [Nama Buku/Kitab/Fatwa], karya [Nama Penulis / Lembaga]".
+    - Paragraf TERAKHIR WAJIB berisi "Daftar Rujukan/Referensi" yang FAKTUAL dari kitab-kitab yang benar-benar telah Anda kutip di atas (sertakan Judul Kitab, Penulis, Bab/Jilid, atau Lembaga Fatwa). DILARANG KERAS memakai kalimat template statis seperti "Diringkas dari buku Majmu Fatawa...". Tuliskan sumbernya sesuai fakta dan data kutipan tulisan Anda.
 
     PENTING: Output WAJIB JSON murni HANYA BERISI ARRAY PARAGRAPHS:
     {
@@ -230,21 +235,26 @@ export const generateArticleContent = async (topic: string, reference?: string):
   for (const modelName of modelsToTry) {
     try {
       // === TAHAP 1: Pendahuluan & Definisi ===
+      if (onProgress) onProgress(10, `[1/3] Menyusun Pendahuluan & Definisi...`);
       console.log(`[Tahap 1/3] Membuat Pendahuluan & Definisi dengan ${modelName}...`);
       const part1 = await generateArticlePart(ai, modelName, part1Prompt);
       console.log(`[Tahap 1/3] Selesai. Paragraf: ${part1.paragraphs?.length || 0}`);
       
       // Jeda 5 detik antar panggilan untuk menghormati RPM limit (14 RPM = ~4.3 detik antar request)
+      if (onProgress) onProgress(25, `Menunggu jeda API rate-limit...`);
       await rateLimitDelay(5000);
 
       // === TAHAP 2: Dalil Al-Qur'an & Hadits ===
+      if (onProgress) onProgress(35, `[2/3] Menyusun Dalil Al-Qur'an & Hadits...`);
       console.log(`[Tahap 2/3] Membuat Dalil Al-Qur'an & Hadits dengan ${modelName}...`);
       const part2 = await generateArticlePart(ai, modelName, part2Prompt);
       console.log(`[Tahap 2/3] Selesai. Paragraf: ${part2.paragraphs?.length || 0}`);
       
+      if (onProgress) onProgress(55, `Menunggu jeda API rate-limit...`);
       await rateLimitDelay(5000);
 
       // === TAHAP 3: Fatwa, Studi Kasus & Kesimpulan ===
+      if (onProgress) onProgress(65, `[3/3] Menyusun Fatwa, Kasus & Kesimpulan...`);
       console.log(`[Tahap 3/3] Membuat Fatwa, Studi Kasus & Kesimpulan dengan ${modelName}...`);
       const part3 = await generateArticlePart(ai, modelName, part3Prompt);
       console.log(`[Tahap 3/3] Selesai. Paragraf: ${part3.paragraphs?.length || 0}`);
@@ -267,6 +277,7 @@ export const generateArticleContent = async (topic: string, reference?: string):
 
       while (totalWords < 3500 && expansionAttempt < MAX_EXPANSIONS) {
         expansionAttempt++;
+        if (onProgress) onProgress(75 + (expansionAttempt * 10), `Memperpanjang artikel (Ekspansi ${expansionAttempt}/2)...`);
         await rateLimitDelay(5000); // Jeda sebelum ekspansi
 
         const kekurangan = 3500 - totalWords;
@@ -326,6 +337,7 @@ export const generateArticleContent = async (topic: string, reference?: string):
       }
 
       console.log(`[Selesai] Artikel final: ${totalWords} kata Latin, ${allParagraphs.length} paragraf.`);
+      if (onProgress) onProgress(100, `Selesai! Menyiapkan dokumen...`);
 
       return {
         title: part1.title || "Artikel Dakwah Kajian Islam",

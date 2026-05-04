@@ -7,6 +7,8 @@ export const ArticleGenerator: React.FC = () => {
   const [topic, setTopic] = useState('');
   const [reference, setReference] = useState('');
   const [isGenerating, setIsGenerating] = useState(false);
+  const [progress, setProgress] = useState(0);
+  const [progressMsg, setProgressMsg] = useState('');
 
   const [generatedArticle, setGeneratedArticle] = useState<any>(null);
   const [history, setHistory] = useState<any[]>(() => {
@@ -25,9 +27,14 @@ export const ArticleGenerator: React.FC = () => {
     }
     
     setIsGenerating(true);
+    setProgress(0);
+    setProgressMsg('Memulai...');
     setGeneratedArticle(null); // Reset previous
     try {
-      const content = await generateArticleContent(topic, reference);
+      const content = await generateArticleContent(topic, reference, (percent, msg) => {
+        setProgress(percent);
+        setProgressMsg(msg);
+      });
       setGeneratedArticle(content);
       
       const newHistory = [content, ...history].slice(0, 10); // Keep last 10
@@ -102,30 +109,38 @@ export const ArticleGenerator: React.FC = () => {
             </p>
           </InputGroup>
 
-          <div style={{ display: 'flex', gap: '12px', marginTop: '8px' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginTop: '8px' }}>
             <button
               onClick={handleGenerate}
               disabled={isGenerating}
               className="btn-premium btn-ghost"
-              style={{ flex: 1, padding: '14px', fontSize: '14px', fontWeight: 600, border: '1px solid var(--accent-gold)', color: 'var(--accent-gold)' }}
+              style={{ padding: '14px', fontSize: '14px', fontWeight: 600, border: '1px solid var(--accent-gold)', color: 'var(--accent-gold)' }}
             >
-              {isGenerating ? (
-                <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
-                  <svg className="animate-spin" width="18" height="18" viewBox="0 0 24 24" fill="none">
-                    <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3" strokeDasharray="31.4 31.4" strokeLinecap="round"/>
-                  </svg>
-                  AI Sedang Menulis Artikel (3 tahap, ~2-4 menit)...
-                </span>
-              ) : (
-                "✨ Generate Artikel"
-              )}
+              {isGenerating ? "Membatalkan..." /* Optional, or hide button, but usually disabled */ : "✨ Generate Artikel"}
             </button>
 
-            {generatedArticle && (
+            {isGenerating && (
+              <div style={{ background: 'var(--bg-primary)', padding: '16px', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-subtle)' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px', fontSize: '12px', fontWeight: 600 }}>
+                  <span>{progressMsg}</span>
+                  <span>{progress}%</span>
+                </div>
+                <div style={{ width: '100%', height: '8px', background: 'var(--border-subtle)', borderRadius: '4px', overflow: 'hidden' }}>
+                  <div style={{ 
+                    width: progress + '%', 
+                    height: '100%', 
+                    background: 'linear-gradient(90deg, var(--accent-gold), #c4983e)', 
+                    transition: 'width 0.3s ease' 
+                  }}></div>
+                </div>
+              </div>
+            )}
+
+            {generatedArticle && !isGenerating && (
               <button
                 onClick={handleDownload}
                 className="btn-premium btn-gold"
-                style={{ flex: 1, padding: '14px', fontSize: '14px', fontWeight: 600 }}
+                style={{ padding: '14px', fontSize: '14px', fontWeight: 600 }}
               >
                 📥 Download "{generatedArticle.title.substring(0, 20)}..." (DOCX)
               </button>
