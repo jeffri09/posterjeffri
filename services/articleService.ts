@@ -43,8 +43,16 @@ export const generateArticleContent = async (topic: string, reference?: string):
        - PENTING: Jika tidak ditemukan pendapat spesifik ulama tersebut, ATAU jika topiknya menyangkut masalah Muamalah Kontemporer (seperti Affiliate, Digital Marketing, dll), maka WAJIB jadikan fatwa kolektif Lajnah Da'imah (Alifta.gov.sa) sebagai prioritas utama.
        - Untuk referensi buku berbahasa Indonesia, gunakan EbookSunnah.com atau IslamHouse.com edisi Indonesia.
     3. Teks Al-Qur'an (Arab) WAJIB menggunakan rasm Utsmani.
-    4. REFERENSI DALIL GANDA: Anda WAJIB MENCANTUMKAN REFERENSI DALIL (Misal: "(HR. Bukhari & Muslim)" atau "(QS. Al-Baqarah: 123)") tepat di AKHIR TEKS ARAB dan juga tepat di AKHIR TEKS TERJEMAHANNYA (keduanya wajib menggunakan tanda kurung).
-    5. PANJANG ARTIKEL & STRUKTUR: Artikel HARUS memiliki Pendahuluan, banyak Sub-Judul (minimal 6 sub-judul utama) untuk Pembahasan Mendalam, dan Kesimpulan. Setiap sub-judul HARUS diuraikan dalam minimal 4-5 paragraf yang panjang. JANGAN menyingkat penjelasan. Jabarkan tafsir dan asbabul wurud dengan sedetail mungkin. Targetkan total minimal 25-35 paragraf panjang untuk memastikan kuota 4 halaman terpenuhi.
+    4. REFERENSI DALIL GANDA: Anda WAJIB MENCANTUMKAN REFERENSI DALIL (Misal: "(QS. Al-Baqarah: 275)" atau "(HR. Bukhari & Muslim)") tepat di AKHIR TEKS ARAB dan juga di AKHIR TEKS TERJEMAHAN. PENTING: Pada teks Arab, referensinya JUGA HARUS DITULIS DALAM HURUF LATIN SEPERTI "(QS. Al-Baqarah: 275)", BUKAN "(سورة البقرة: ٢٧٥)".
+    5. PANJANG ARTIKEL & STRUKTUR (WAJIB DIPATUHI ATAU GAGAL): Artikel ini ditujukan untuk jurnal ilmiah / buku saku, sehingga WAJIB sangat panjang (MINIMAL 40 PARAGRAF). Anda dilarang keras meringkas! Anda WAJIB membagi artikel menjadi struktur baku berikut:
+       - 1. PENDAHULUAN (Minimal 5 paragraf panjang)
+       - 2. DEFINISI & HAKIKAT (Minimal 5 paragraf panjang)
+       - 3. DALIL AL-QUR'AN & TAFSIR RINCI (Minimal 8 paragraf panjang)
+       - 4. DALIL HADITS & SYARAH RINCI (Minimal 8 paragraf panjang)
+       - 5. FATWA & PANDANGAN ULAMA SALAF/KONTEMPORER (Minimal 6 paragraf panjang)
+       - 6. HUKUM CABANG & STUDI KASUS KONTEMPORER (Minimal 6 paragraf panjang)
+       - 7. KESIMPULAN (Minimal 3 paragraf panjang)
+       Total harus mencapai 40 paragraf lebih. Semakin panjang dan mendetail, semakin baik. JANGAN ADA SUB-JUDUL YANG DILEWATKAN.
     6. Di akhir artikel, paragraf terakhir WAJIB berisi sumber tulisan dengan format: "Diringkas dari buku [Nama Buku/Kitab/Fatwa], karya [Nama Penulis / Lembaga]" atau sesuaikan referensinya.
 
     PENTING: Output WAJIB dalam bentuk JSON murni (tanpa markdown \`\`\`json) dengan format berikut:
