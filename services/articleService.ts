@@ -27,20 +27,24 @@ export const generateArticleContent = async (topic: string, reference?: string):
   
   const prompt = `
     Anda adalah seorang Ustadz bermanhaj Salaf yang ahli dalam menulis karya ilmiah dan artikel dakwah yang panjang, mendalam, dan terstruktur.
-    Tugas Anda: Buat artikel dakwah bermanhaj salaf yang SANGAT PANJANG, komprehensif, dan mendalam, dengan target 2500 hingga 3500 kata (MINIMAL 4 halaman F4 penuh) tentang topik: "${topic}".
+    Tugas Anda: Buat artikel dakwah bermanhaj salaf yang SANGAT PANJANG, komprehensif, dan mendalam, dengan target MINIMAL 3500 kata (PASTIKAN MENCAPAI 4 halaman F4 penuh) tentang topik: "${topic}".
     Anda HARUS membedah topik ini secara rinci dari berbagai sudut pandang (dalil, asbabun nuzul, penjelasan tafsir ulama secara luas, penjabaran faedah hukum/adab, hingga implementasi/studi kasus nyata masa kini).
+    Jika bahasan utama dirasa kurang panjang untuk mencapai 4 halaman, Anda WAJIB menambahkan faedah turunan, hukum-hukum cabang, atau studi kasus yang MASIH DALAM SATU TOPIK (SEALUR) dengan topik awal. DILARANG KERAS menyimpang atau melompat ke topik lain yang berbeda (misal: dari bahas Affiliate tiba-tiba bahas Haji).
     ${reference ? `\nReferensi atau rujukan materi yang diberikan pengguna:\n"${reference}"\nEksplorasi dan elaborasi referensi ini secara maksimal menjadi paragraf-paragraf yang panjang.` : ''}
 
     ATURAN KETAT (WAJIB DIIKUTI):
     0. DILARANG KERAS MENGARANG (HALUSINASI) ISI, FATWA, ATAU DALIL. Anda harus bertindak secara ilmiah dan amanah secara ilmiah. Jika Anda tidak tahu dalil atau pendapat ulama yang sahih tentang suatu sub-topik, JANGAN ditulis. Kutip hanya yang pasti benar.
     1. Takhrij Hadits WAJIB Shahih (seperti riwayat Bukhari dan Muslim). DILARANG KERAS menggunakan hadits dha'if atau maudhu'.
-    2. Rujukan pemahaman, kutipan, atau tafsir WAJIB merujuk pada: 
-       - Ulama Salaf: Tafsir Ibnu Katsir, At-Thabari, Al-Baghawi, As-Sa'di, Syaikhul Islam Ibnu Taimiyah, Ibnul Qayyim al-Jauziyyah.
-       - Ulama Kontemporer: Syaikh Abdul Aziz bin Baz, Syaikh Muhammad Nashiruddin al-Albani, Syaikh Muhammad bin Shalih al-Utsaimin, Syaikh Shalih al-Fauzan, Syaikh Muqbil bin Hadi al-Wadi'i, Syaikh Rabi' bin Hadi al-Madkhali.
-       - PENTING: Jika tidak ditemukan pendapat spesifik ulama tersebut, ATAU jika topiknya menyangkut masalah Muamalah Kontemporer (seperti Affiliate, Digital Marketing, dll), maka WAJIB jadikan fatwa kolektif Lajnah Da'imah sebagai prioritas utama.
+    2. Rujukan pemahaman, kutipan, atau tafsir WAJIB merujuk pada (Pioritaskan pengetahuan Anda dari domain-domain resmi berikut): 
+       - Syaikhul Islam Ibnu Taimiyah (IbnTaymiyyah.com) & Ibnul Qayyim al-Jauziyyah (IbnAlQayyim.com).
+       - Ulama Kontemporer: Syaikh Bin Baz (BinBaz.org.sa), Syaikh Al-Albani (AlAlbany.net), Syaikh Al-Utsaimin (BinOthaimeen.net), Syaikh Shalih al-Fauzan (AlFawzan.af.org.sa), Syaikh Muqbil (Muqbil.net), Syaikh Rabi' bin Hadi (Rabee.net).
+       - Tafsir Ibnu Katsir, At-Thabari, Al-Baghawi (Wafee.co / Tafsir.net). Tafsir As-Sa'di (EbookSunnah.com).
+       - PENTING: Jika tidak ditemukan pendapat spesifik ulama tersebut, ATAU jika topiknya menyangkut masalah Muamalah Kontemporer (seperti Affiliate, Digital Marketing, dll), maka WAJIB jadikan fatwa kolektif Lajnah Da'imah (Alifta.gov.sa) sebagai prioritas utama.
+       - Untuk referensi buku berbahasa Indonesia, gunakan EbookSunnah.com atau IslamHouse.com edisi Indonesia.
     3. Teks Al-Qur'an (Arab) WAJIB menggunakan rasm Utsmani.
-    4. PANJANG ARTIKEL & STRUKTUR: Artikel HARUS memiliki Pendahuluan, banyak Sub-Judul (minimal 5 sub-judul utama) untuk Pembahasan Mendalam, dan Kesimpulan. Setiap sub-judul HARUS diuraikan dalam minimal 3-4 paragraf yang panjang. JANGAN menyingkat penjelasan. Jabarkan tafsir dan asbabul wurud dengan sedetail mungkin. Targetkan total minimal 15-25 paragraf panjang untuk mencapai kuota 4 halaman.
-    5. Di akhir artikel, paragraf terakhir WAJIB berisi sumber tulisan dengan format: "Diringkas dari buku [Nama Buku/Kitab/Fatwa], karya [Nama Penulis / Lembaga]" atau sesuaikan referensinya.
+    4. REFERENSI DALIL GANDA: Anda WAJIB MENCANTUMKAN REFERENSI DALIL (Misal: "(HR. Bukhari & Muslim)" atau "(QS. Al-Baqarah: 123)") tepat di AKHIR TEKS ARAB dan juga tepat di AKHIR TEKS TERJEMAHANNYA (keduanya wajib menggunakan tanda kurung).
+    5. PANJANG ARTIKEL & STRUKTUR: Artikel HARUS memiliki Pendahuluan, banyak Sub-Judul (minimal 6 sub-judul utama) untuk Pembahasan Mendalam, dan Kesimpulan. Setiap sub-judul HARUS diuraikan dalam minimal 4-5 paragraf yang panjang. JANGAN menyingkat penjelasan. Jabarkan tafsir dan asbabul wurud dengan sedetail mungkin. Targetkan total minimal 25-35 paragraf panjang untuk memastikan kuota 4 halaman terpenuhi.
+    6. Di akhir artikel, paragraf terakhir WAJIB berisi sumber tulisan dengan format: "Diringkas dari buku [Nama Buku/Kitab/Fatwa], karya [Nama Penulis / Lembaga]" atau sesuaikan referensinya.
 
     PENTING: Output WAJIB dalam bentuk JSON murni (tanpa markdown \`\`\`json) dengan format berikut:
     {

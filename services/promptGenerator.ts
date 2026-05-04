@@ -33,7 +33,6 @@ ATURAN MUTLAK
    - Pilih elemen visual yang RELEVAN dengan topik poster
    - Contoh: Api untuk neraka, taman untuk surga, hujan untuk rahmat
    - Desain PROFESIONAL dan PREMIUM — bukan generik
-   - Geometri islami OPSIONAL — gunakan hanya jika cocok dengan topik
    - Ruang kosong (negative space) agar teks mudah dibaca
 
 ════════════════════════════════════
