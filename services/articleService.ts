@@ -27,17 +27,19 @@ export const generateArticleContent = async (topic: string, reference?: string):
   
   const prompt = `
     Anda adalah seorang Ustadz bermanhaj Salaf yang ahli dalam menulis karya ilmiah dan artikel dakwah yang panjang, mendalam, dan terstruktur.
-    Tugas Anda: Buat artikel dakwah bermanhaj salaf yang komprehensif dan mendalam, sepanjang kurang lebih 1500 kata (setara 3-4 halaman) tentang topik: "${topic}".
-    ${reference ? `\nReferensi atau rujukan materi yang diberikan pengguna:\n"${reference}"\nEksplorasi dan jadikan referensi ini sebagai bahan utama tulisan jika relevan.` : ''}
+    Tugas Anda: Buat artikel dakwah bermanhaj salaf yang SANGAT PANJANG, komprehensif, dan mendalam, dengan target 2500 hingga 3500 kata (MINIMAL 4 halaman F4 penuh) tentang topik: "${topic}".
+    Anda HARUS membedah topik ini secara rinci dari berbagai sudut pandang (dalil, asbabun nuzul, penjelasan tafsir ulama secara luas, penjabaran faedah hukum/adab, hingga implementasi/studi kasus nyata masa kini).
+    ${reference ? `\nReferensi atau rujukan materi yang diberikan pengguna:\n"${reference}"\nEksplorasi dan elaborasi referensi ini secara maksimal menjadi paragraf-paragraf yang panjang.` : ''}
 
     ATURAN KETAT (WAJIB DIIKUTI):
     1. Takhrij Hadits WAJIB Shahih (seperti riwayat Bukhari dan Muslim). DILARANG KERAS menggunakan hadits dha'if atau maudhu'.
     2. Rujukan pemahaman, kutipan, atau tafsir WAJIB merujuk pada: 
        - Ulama Salaf: Tafsir Ibnu Katsir, At-Thabari, Al-Baghawi, As-Sa'di, Syaikhul Islam Ibnu Taimiyah, Ibnul Qayyim al-Jauziyyah.
-       - Ulama Kontemporer: Syaikh Abdul Aziz bin Baz, Syaikh Muhammad Nashiruddin al-Albani, Syaikh Muhammad bin Shalih al-Utsaimin, Syaikh Muqbil bin Hadi al-Wadi'i, Syaikh Rabi' bin Hadi al-Madkhali.
+       - Ulama Kontemporer: Syaikh Abdul Aziz bin Baz, Syaikh Muhammad Nashiruddin al-Albani, Syaikh Muhammad bin Shalih al-Utsaimin, Syaikh Shalih al-Fauzan, Syaikh Muqbil bin Hadi al-Wadi'i, Syaikh Rabi' bin Hadi al-Madkhali.
+       - PENTING: Jika tidak ditemukan pendapat spesifik ulama tersebut, ATAU jika topiknya menyangkut masalah Muamalah Kontemporer (seperti Affiliate, Digital Marketing, dll), maka WAJIB jadikan fatwa kolektif Lajnah Da'imah sebagai prioritas utama.
     3. Teks Al-Qur'an (Arab) WAJIB menggunakan rasm Utsmani.
-    4. Struktur Artikel: Pendahuluan, Pembahasan Mendalam (dengan beberapa sub-judul), dan Kesimpulan. Tulislah panjang lebar dengan penjabaran poin per poin.
-    5. Di akhir artikel, paragraf terakhir WAJIB berisi sumber tulisan dengan format: "Diringkas dari buku [Nama Buku/Kitab], karya [Nama Penulis]" atau sesuaikan dengan referensi yang dipakai.
+    4. PANJANG ARTIKEL & STRUKTUR: Artikel HARUS memiliki Pendahuluan, banyak Sub-Judul (minimal 5 sub-judul utama) untuk Pembahasan Mendalam, dan Kesimpulan. Setiap sub-judul HARUS diuraikan dalam minimal 3-4 paragraf yang panjang. JANGAN menyingkat penjelasan. Jabarkan tafsir dan asbabul wurud dengan sedetail mungkin. Targetkan total minimal 15-25 paragraf panjang untuk mencapai kuota 4 halaman.
+    5. Di akhir artikel, paragraf terakhir WAJIB berisi sumber tulisan dengan format: "Diringkas dari buku [Nama Buku/Kitab/Fatwa], karya [Nama Penulis / Lembaga]" atau sesuaikan referensinya.
 
     PENTING: Output WAJIB dalam bentuk JSON murni (tanpa markdown \`\`\`json) dengan format berikut:
     {
