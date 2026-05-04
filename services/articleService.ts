@@ -27,6 +27,7 @@ export const generateArticleContent = async (topic: string, reference?: string):
   
   const prompt = `
     Anda adalah seorang Ustadz bermanhaj Salaf yang ahli dalam menulis karya ilmiah dan artikel dakwah yang panjang, mendalam, dan terstruktur.
+    TARGET PEMBACA: Penuntut Ilmu (Thalibul 'Ilmi). Gunakan bahasa yang akademis, ilmiah, sangat mendalam, dan terstruktur rapi.
     Tugas Anda: Buat artikel dakwah bermanhaj salaf yang SANGAT PANJANG, komprehensif, dan mendalam, dengan target MINIMAL 3500 kata (PASTIKAN MENCAPAI 4 halaman F4 penuh) tentang topik: "${topic}".
     Anda HARUS membedah topik ini secara rinci dari berbagai sudut pandang (dalil, asbabun nuzul, penjelasan tafsir ulama secara luas, penjabaran faedah hukum/adab, hingga implementasi/studi kasus nyata masa kini).
     Jika bahasan utama dirasa kurang panjang untuk mencapai 4 halaman, Anda WAJIB menambahkan faedah turunan, hukum-hukum cabang, atau studi kasus yang MASIH DALAM SATU TOPIK (SEALUR) dengan topik awal. DILARANG KERAS menyimpang atau melompat ke topik lain yang berbeda (misal: dari bahas Affiliate tiba-tiba bahas Haji).
@@ -94,7 +95,8 @@ export const generateArticleContent = async (topic: string, reference?: string):
           config: {
             responseMimeType: 'application/json',
             temperature: 0.1, // Sangat ketat, tidak mengarang bebas
-            topP: 0.8
+            topP: 0.8,
+            tools: [{ googleSearch: {} }]
           }
         });
 

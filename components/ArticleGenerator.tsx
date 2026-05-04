@@ -9,6 +9,14 @@ export const ArticleGenerator: React.FC = () => {
   const [isGenerating, setIsGenerating] = useState(false);
 
   const [generatedArticle, setGeneratedArticle] = useState<any>(null);
+  const [history, setHistory] = useState<any[]>(() => {
+    try {
+      const saved = localStorage.getItem('articleHistory');
+      return saved ? JSON.parse(saved) : [];
+    } catch {
+      return [];
+    }
+  });
 
   const handleGenerate = async () => {
     if (!topic.trim()) {
@@ -21,6 +29,10 @@ export const ArticleGenerator: React.FC = () => {
     try {
       const content = await generateArticleContent(topic, reference);
       setGeneratedArticle(content);
+      
+      const newHistory = [content, ...history].slice(0, 10); // Keep last 10
+      setHistory(newHistory);
+      localStorage.setItem('articleHistory', JSON.stringify(newHistory));
     } catch (e: any) {
       console.error(e);
       alert("Gagal membuat artikel: " + (e.message || "Terjadi kesalahan."));
@@ -160,6 +172,37 @@ export const ArticleGenerator: React.FC = () => {
             <div style={{ gridColumn: 'span 2' }}>• EbookSunnah.com & IslamHouse.com</div>
           </div>
         </div>
+
+        {history.length > 0 && (
+          <div style={{ marginTop: '16px', paddingTop: '16px', borderTop: '1px dashed var(--border-subtle)' }}>
+            <h3 style={{ fontSize: '12px', fontWeight: 700, color: 'var(--text-secondary)', marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <span>🕒</span> Riwayat Artikel Terakhir
+            </h3>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              {history.map((item, idx) => (
+                <div key={idx} style={{ 
+                  display: 'flex', 
+                  justifyContent: 'space-between', 
+                  alignItems: 'center',
+                  background: 'var(--bg-primary)',
+                  padding: '10px 12px',
+                  borderRadius: 'var(--radius-md)',
+                  border: '1px solid var(--border-subtle)'
+                }}>
+                  <div style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-primary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '70%' }}>
+                    {item.title}
+                  </div>
+                  <button 
+                    onClick={() => generateAndDownloadDocx(item)}
+                    style={{ fontSize: '11px', padding: '4px 8px', background: 'var(--accent-gold)', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer', fontWeight: 600 }}
+                  >
+                    Unduh
+                  </button>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
