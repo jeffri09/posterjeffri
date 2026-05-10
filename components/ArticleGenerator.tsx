@@ -64,12 +64,8 @@ export const ArticleGenerator: React.FC = () => {
   const stats: ArticleStats | undefined = generatedArticle?.stats;
 
   return (
-    <div style={{ padding: '24px', maxWidth: '900px', margin: '0 auto', color: 'var(--text-primary)' }}>
-      <div style={{
-        padding: '24px', background: 'var(--bg-secondary)',
-        borderRadius: 'var(--radius-lg)', border: '1px solid var(--border-subtle)',
-        boxShadow: '0 4px 20px rgba(0,0,0,0.2)',
-      }}>
+    <div className="article-container">
+      <div className="article-card">
         {/* Header */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '24px' }}>
           <div style={{

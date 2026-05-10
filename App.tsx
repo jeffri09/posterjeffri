@@ -75,27 +75,10 @@ const App: React.FC = () => {
 
   // --- RENDER ---
   return (
-    <div style={{ 
-      minHeight: '100vh', 
-      display: 'flex', 
-      flexDirection: 'column',
-      background: 'var(--bg-primary)',
-      color: 'var(--text-primary)',
-      fontFamily: "'Inter', sans-serif",
-    }}>
+    <div className="app-container">
       
       {/* ═══ TOP NAVIGATION ═══ */}
-      <nav style={{
-        padding: '12px 24px',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        borderBottom: '1px solid var(--border-subtle)',
-        background: 'var(--bg-secondary)',
-        position: 'sticky',
-        top: 0,
-        zIndex: 50,
-      }}>
+      <nav className="top-nav">
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
           {/* Logo */}
           <div style={{
@@ -140,17 +123,10 @@ const App: React.FC = () => {
 
       {/* ═══ MAIN CONTENT ═══ */}
       {activeTab === 'generator' ? (
-        <div style={{ display: 'flex', flex: 1, overflow: 'hidden' }}>
+        <div className="main-content">
           
           {/* ═══ LEFT PANEL — Input & Techniques ═══ */}
-          <div style={{
-            width: '420px',
-            flexShrink: 0,
-            borderRight: '1px solid var(--border-subtle)',
-            overflowY: 'auto',
-            background: 'var(--bg-secondary)',
-            height: 'calc(100vh - 63px)',
-          }}>
+          <div className="left-panel">
             <div style={{ padding: '20px' }}>
 
               {/* AI Content Generation */}
@@ -333,17 +309,9 @@ const App: React.FC = () => {
           </div>
 
           {/* ═══ RIGHT PANEL — Prompt Output ═══ */}
-          <div style={{
-            flex: 1,
-            display: 'flex',
-            flexDirection: 'column',
-            background: 'var(--bg-primary)',
-            height: 'calc(100vh - 63px)',
-            overflow: 'hidden',
-            padding: '20px',
-          }}>
+          <div className="right-panel">
             {/* Header */}
-            <div style={{
+            <div className="prompt-output-header" style={{
               display: 'flex',
               justifyContent: 'space-between',
               alignItems: 'center',
@@ -364,7 +332,7 @@ const App: React.FC = () => {
                   Salin dan tempel ke Gemini / AI Image Generator
                 </p>
               </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <div className="prompt-output-header-actions" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                 {/* Stats */}
                 <div style={{
                   display: 'flex',
