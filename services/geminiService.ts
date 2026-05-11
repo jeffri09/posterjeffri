@@ -211,9 +211,20 @@ export const generateBatchPosterContent = async (
 
           // Simpan hasil dan catat dalil yang sudah dipakai
           for (const item of parsed) {
-            allResults.push(item);
-            if (item.quoteTranslation) {
-              usedDalilList.push(item.quoteTranslation.substring(0, 80));
+            // Sanitasi tipe data — pastikan semua field adalah string
+            const sanitized: Partial<PosterFormData> = {
+              title: String(item.title ?? ''),
+              quoteArabic: String(item.quoteArabic ?? ''),
+              quoteTranslation: String(item.quoteTranslation ?? ''),
+              advice: String(item.advice ?? ''),
+              visualContext: String(item.visualContext ?? ''),
+              colorPalette: typeof item.colorPalette === 'object'
+                ? JSON.stringify(item.colorPalette)
+                : String(item.colorPalette ?? ''),
+            };
+            allResults.push(sanitized);
+            if (sanitized.quoteTranslation) {
+              usedDalilList.push(sanitized.quoteTranslation.substring(0, 80));
             }
           }
 

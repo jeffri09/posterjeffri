@@ -34,7 +34,7 @@ const App: React.FC = () => {
   const [showTechniquePanel, setShowTechniquePanel] = useState(false);
 
   // --- Batch Generation State ---
-  const [batchCount, setBatchCount] = useState<number>(10);
+  const [batchCount, setBatchCount] = useState<string>('10');
   const [isBatchGenerating, setIsBatchGenerating] = useState(false);
   const [batchProgress, setBatchProgress] = useState({ completed: 0, total: 0 });
 
@@ -85,17 +85,22 @@ const App: React.FC = () => {
       alert("Masukkan topik dakwah terlebih dahulu.");
       return;
     }
-    if (batchCount < 2) {
+    const count = parseInt(batchCount) || 0;
+    if (count < 2) {
       alert("Jumlah prompt minimal 2.");
       return;
     }
+    if (count > 100) {
+      alert("Jumlah prompt maksimal 100.");
+      return;
+    }
     setIsBatchGenerating(true);
-    setBatchProgress({ completed: 0, total: batchCount });
+    setBatchProgress({ completed: 0, total: count });
     try {
       // 1. Generate semua konten via batch chunking
       const batchResults = await generateBatchPosterContent(
         topicInput,
-        batchCount,
+        count,
         (completed, total) => setBatchProgress({ completed, total })
       );
 
@@ -270,7 +275,7 @@ const App: React.FC = () => {
                         min={2}
                         max={100}
                         value={batchCount}
-                        onChange={(e) => setBatchCount(Math.max(2, parseInt(e.target.value) || 2))}
+                        onChange={(e) => setBatchCount(e.target.value)}
                         className="input-premium"
                         style={{ width: '65px', textAlign: 'center', padding: '6px 8px' }}
                         disabled={isBatchGenerating}
