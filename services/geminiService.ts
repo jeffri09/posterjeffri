@@ -23,10 +23,11 @@ export const generatePosterContent = async (topic: string): Promise<Partial<Post
 
     **DALIL:** Seleksi dalil manhaj salaf SANGAT KETAT:
     0. DILARANG KERAS MENGARANG ATAU MEMALSUKAN DALIL/HADITS. Hanya gunakan dalil yang Anda yakini kesahihannya 100%.
-    1. WAJIB utamakan Ayat Al-Qur'an dan Teks Al-Qur'an WAJIB menggunakan rasm Utsmani (standar Mushaf Madinah)
-    2. Jika menggunakan Hadits, WAJIB Hadits Shahih (seperti Bukhari/Muslim).
-    3. Terjemahan WAJIB sesuai pemahaman manhaj salaf atau ulama manhaj salaf seperti Ibnu Katsir, At-Thabari, Al-Baghawi, dan As-Sa'di. Anda WAJIB merujuk pada basis data situs resmi: IbnTaymiyyah.com, IbnAlQayyim.com, BinBaz.org.sa, AlAlbany.net, BinOthaimeen.net, AlFawzan.af.org.sa, Muqbil.net, Rabee.net, Alifta.gov.sa (Lajnah Da'imah), Wafee.co, Tafsir.net, EbookSunnah.com, atau IslamHouse.com (id).
-    4. WAJIB cantumkan sumber/referensi dalil (misal: "QS. Al-Baqarah: 123" atau "HR. Bukhari & Muslim") tepat di akhir teks "quoteTranslation", diletakkan di dalam tanda kurung. Contoh: "Allah tidak menerima shalat... (HR. Bukhari & Muslim)".
+    1. Pilih dalil yang PALING RELEVAN dan TEPAT SASARAN dengan topik, baik itu Ayat Al-Qur'an ATAUPUN Hadits Shahih.
+    2. Jika menggunakan Al-Qur'an, teks Arab WAJIB menggunakan rasm Utsmani (standar Mushaf Madinah).
+    3. Jika menggunakan Hadits, WAJIB Hadits Shahih (seperti riwayat Bukhari atau Muslim).
+    4. Terjemahan WAJIB sesuai pemahaman manhaj salaf atau ulama manhaj salaf seperti Ibnu Katsir, At-Thabari, Al-Baghawi, dan As-Sa'di. Anda WAJIB merujuk pada basis data situs resmi: IbnTaymiyyah.com, IbnAlQayyim.com, BinBaz.org.sa, AlAlbany.net, BinOthaimeen.net, AlFawzan.af.org.sa, Muqbil.net, Rabee.net, Alifta.gov.sa (Lajnah Da'imah), Wafee.co, Tafsir.net, EbookSunnah.com, atau IslamHouse.com (id).
+    5. WAJIB cantumkan sumber/referensi dalil (misal: "QS. Al-Baqarah: 123" atau "HR. Bukhari & Muslim") tepat di akhir teks "quoteTranslation", diletakkan di dalam tanda kurung. Contoh: "Allah tidak menerima shalat... (HR. Bukhari & Muslim)".
     **JUDUL:** Maks 6 kata (Emotional hook menarik).
     **NASIHAT:** Maks 2 kalimat singkat yang menyentuh hati.
     **VISUAL:** Deskripsi background ringkas (1-2 kalimat). WAJIB adaptif dengan topik (misal: gurun untuk sabar, api untuk neraka). Desain premium, banyak negative space. Jika ada manusia/hewan, WAJIB siluet/kartun tanpa wajah.

@@ -43,7 +43,6 @@ export const INITIAL_FORM_DATA: PosterFormData = {
   colorPalette: "Dominan: Hijau Zamrud (#1B4332)\nAksen: Emas (#D4A853)\nBrand Footer: Biru Tua (#0E2F73)\nMood: Penuh harapan, berkah"
 };
 
-// Removed Watermark Types
 
 // --- Prompt Generation Context ---
 export interface PromptContext {
