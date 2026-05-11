@@ -27,7 +27,7 @@ export const generatePosterContent = async (topic: string): Promise<Partial<Post
     2. Jika menggunakan Al-Qur'an, teks Arab WAJIB menggunakan rasm Utsmani (standar Mushaf Madinah).
     3. Jika menggunakan Hadits, WAJIB Hadits Shahih (seperti riwayat Bukhari atau Muslim).
     4. Terjemahan WAJIB sesuai pemahaman manhaj salaf atau ulama manhaj salaf seperti Ibnu Katsir, At-Thabari, Al-Baghawi, dan As-Sa'di. Anda WAJIB merujuk pada basis data situs resmi: IbnTaymiyyah.com, IbnAlQayyim.com, BinBaz.org.sa, AlAlbany.net, BinOthaimeen.net, AlFawzan.af.org.sa, Muqbil.net, Rabee.net, Alifta.gov.sa (Lajnah Da'imah), Wafee.co, Tafsir.net, EbookSunnah.com, atau IslamHouse.com (id).
-    5. WAJIB cantumkan sumber/referensi dalil (misal: "QS. Al-Baqarah: 123" atau "HR. Bukhari & Muslim") tepat di akhir teks "quoteTranslation", diletakkan di dalam tanda kurung. Contoh: "Allah tidak menerima shalat... (HR. Bukhari & Muslim)".
+    5. **KRITIS — WAJIB PATUHI:** Field "quoteTranslation" HARUS SELALU diakhiri dengan sumber dalil dalam tanda kurung. Format: "[teks terjemahan] (QS. Nama-Surat: Ayat)" atau "[teks terjemahan] (HR. Perawi)". Jika TIDAK ada referensi di akhir quoteTranslation, output dianggap GAGAL dan DITOLAK.
     **JUDUL:** Maks 6 kata (Emotional hook menarik).
     **NASIHAT:** Maks 2 kalimat singkat yang menyentuh hati.
     **VISUAL:** Deskripsi background ringkas (1-2 kalimat). WAJIB adaptif dengan topik (misal: gurun untuk sabar, api untuk neraka). Desain premium, banyak negative space. Jika ada manusia/hewan, WAJIB siluet/kartun tanpa wajah.
@@ -36,11 +36,12 @@ export const generatePosterContent = async (topic: string): Promise<Partial<Post
     {
       "title": "...",
       "quoteArabic": "...",
-      "quoteTranslation": "...",
+      "quoteTranslation": "Sesungguhnya sesudah kesulitan itu ada kemudahan. (QS. Al-Insyirah: 6)",
       "advice": "...",
       "visualContext": "...",
       "colorPalette": "..."
     }
+    PERHATIKAN: Contoh di atas menunjukkan bahwa quoteTranslation WAJIB diakhiri dengan referensi dalam tanda kurung seperti "(QS. Al-Insyirah: 6)" atau "(HR. Bukhari & Muslim)". JANGAN pernah menghilangkan referensi ini.
   `;
 
   const savedModel = localStorage.getItem('geminiModel');
@@ -64,7 +65,7 @@ export const generatePosterContent = async (topic: string): Promise<Partial<Post
           contents: prompt,
           config: {
             responseMimeType: 'application/json',
-            temperature: 0.1, // Sangat ketat, anti-halusinasi
+            temperature: 0.2, // Rendah tapi cukup untuk mengikuti semua instruksi
             topP: 0.8
           }
         });
@@ -78,7 +79,24 @@ export const generatePosterContent = async (topic: string): Promise<Partial<Post
 
         // Clean up markdown just in case
         const cleanedText = text.replace(/```json/gi, '').replace(/```/g, '').trim();
-        return JSON.parse(cleanedText);
+        const parsed = JSON.parse(cleanedText);
+
+        // ══ VALIDASI REFERENSI DALIL (single generate) ══
+        if (parsed.quoteTranslation) {
+          let qt = String(parsed.quoteTranslation);
+          const hasRef = /\((?:QS|HR|Qs|Hr|qs|hr)\..+\)\s*$/.test(qt.trim());
+          if (!hasRef && qt.trim().length > 0) {
+            const fallbackRef = parsed.dalilReference || parsed.reference || parsed.source || '';
+            if (fallbackRef) {
+              parsed.quoteTranslation = `${qt.trim()} (${String(fallbackRef).replace(/^\(|\)$/g, '').trim()})`;
+            } else {
+              console.warn(`[Single Validasi] quoteTranslation tanpa referensi dalil: "${qt.substring(0, 60)}..."`);
+              parsed.quoteTranslation = `${qt.trim()} [⚠️ REFERENSI DALIL TIDAK TERDETEKSI — Periksa manual]`;
+            }
+          }
+        }
+
+        return parsed;
       } catch (e: any) {
         lastError = e;
         const msg = (e.message || String(e)).toLowerCase();
@@ -152,7 +170,7 @@ export const generateBatchPosterContent = async (
     2. Jika menggunakan Al-Qur'an, teks Arab WAJIB menggunakan rasm Utsmani (standar Mushaf Madinah).
     3. Jika menggunakan Hadits, WAJIB Hadits Shahih (seperti riwayat Bukhari atau Muslim).
     4. Terjemahan WAJIB sesuai pemahaman manhaj salaf atau ulama manhaj salaf seperti Ibnu Katsir, At-Thabari, Al-Baghawi, dan As-Sa'di. Anda WAJIB merujuk pada basis data situs resmi: IbnTaymiyyah.com, IbnAlQayyim.com, BinBaz.org.sa, AlAlbany.net, BinOthaimeen.net, AlFawzan.af.org.sa, Muqbil.net, Rabee.net, Alifta.gov.sa (Lajnah Da'imah), Wafee.co, Tafsir.net, EbookSunnah.com, atau IslamHouse.com (id).
-    5. WAJIB cantumkan sumber/referensi dalil (misal: "QS. Al-Baqarah: 123" atau "HR. Bukhari & Muslim") tepat di akhir teks "quoteTranslation", diletakkan di dalam tanda kurung.
+    5. **KRITIS — WAJIB PATUHI:** Setiap field "quoteTranslation" HARUS SELALU diakhiri dengan sumber dalil dalam tanda kurung. Format: "[teks terjemahan] (QS. Nama-Surat: Ayat)" atau "[teks terjemahan] (HR. Perawi)". Jika ada quoteTranslation yang TIDAK diakhiri referensi dalam tanda kurung, SELURUH output dianggap GAGAL dan DITOLAK.
     **JUDUL:** Maks 6 kata (Emotional hook menarik).
     **NASIHAT:** Maks 2 kalimat singkat yang menyentuh hati.
     **VISUAL:** Deskripsi background ringkas (1-2 kalimat). WAJIB adaptif dengan topik. Desain premium, banyak negative space. Jika ada manusia/hewan, WAJIB siluet/kartun tanpa wajah.
@@ -160,14 +178,15 @@ export const generateBatchPosterContent = async (
     **PENTING**: WAJIB kembalikan BENTUK JSON ARRAY SAJA tanpa markdown (\`\`\`json) atau teks lainnya! Format JSON Array-nya:
     [
       {
-        "title": "...",
-        "quoteArabic": "...",
-        "quoteTranslation": "...",
-        "advice": "...",
+        "title": "Indahnya Kesabaran",
+        "quoteArabic": "إِنَّ مَعَ ٱلْعُسْرِ يُسْرًا",
+        "quoteTranslation": "Sesungguhnya sesudah kesulitan itu ada kemudahan. (QS. Al-Insyirah: 6)",
+        "advice": "Bersabarlah, karena Allah selalu bersama orang-orang yang sabar.",
         "visualContext": "...",
         "colorPalette": "..."
       }
     ]
+    PERHATIKAN CONTOH DI ATAS: quoteTranslation WAJIB diakhiri referensi dalam tanda kurung seperti "(QS. Al-Insyirah: 6)". JANGAN pernah menghilangkan referensi ini pada output manapun.
     Hasilkan tepat ${chunkCount} objek dalam array.
   `;
 
@@ -212,10 +231,27 @@ export const generateBatchPosterContent = async (
           // Simpan hasil dan catat dalil yang sudah dipakai
           for (const item of parsed) {
             // Sanitasi tipe data — pastikan semua field adalah string
+            let translationText = String(item.quoteTranslation ?? '');
+
+            // ══ VALIDASI REFERENSI DALIL ══
+            // Cek apakah quoteTranslation sudah mengandung referensi di akhir (dalam tanda kurung)
+            const hasReference = /\((?:QS|HR|Qs|Hr|qs|hr)\..+\)\s*$/.test(translationText.trim());
+            if (!hasReference && translationText.trim().length > 0) {
+              // Coba ekstrak referensi dari field "dalilReference" jika AI menyediakannya secara terpisah
+              const fallbackRef = item.dalilReference || item.reference || item.source || '';
+              if (fallbackRef) {
+                translationText = `${translationText.trim()} (${String(fallbackRef).replace(/^\(|\)$/g, '').trim()})`;
+              } else {
+                // Tandai dengan placeholder agar user tahu referensi tidak tergenerate
+                console.warn(`[Batch Validasi] quoteTranslation tanpa referensi dalil: "${translationText.substring(0, 60)}..."`);
+                translationText = `${translationText.trim()} [⚠️ REFERENSI DALIL TIDAK TERDETEKSI — Periksa manual]`;
+              }
+            }
+
             const sanitized: Partial<PosterFormData> = {
               title: String(item.title ?? ''),
               quoteArabic: String(item.quoteArabic ?? ''),
-              quoteTranslation: String(item.quoteTranslation ?? ''),
+              quoteTranslation: translationText,
               advice: String(item.advice ?? ''),
               visualContext: String(item.visualContext ?? ''),
               colorPalette: typeof item.colorPalette === 'object'
