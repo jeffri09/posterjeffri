@@ -7,7 +7,8 @@ import {
   INITIAL_FORM_DATA 
 } from './types';
 import { generatePosterPrompt } from './services/promptGenerator';
-import { generatePosterContent } from './services/geminiService';
+import { generatePosterContent, generateBatchPosterContent } from './services/geminiService';
+import { saveAs } from 'file-saver';
 import { PRESET_TECHNIQUE_IDS } from './constants/techniques';
 import { TabNavigation } from './components/TabNavigation';
 import { TechniqueSelector } from './components/TechniqueSelector';
@@ -31,6 +32,11 @@ const App: React.FC = () => {
     [...PRESET_TECHNIQUE_IDS['standard']]
   );
   const [showTechniquePanel, setShowTechniquePanel] = useState(false);
+
+  // --- Batch Generation State ---
+  const [batchCount, setBatchCount] = useState<number>(10);
+  const [isBatchGenerating, setIsBatchGenerating] = useState(false);
+  const [batchProgress, setBatchProgress] = useState({ completed: 0, total: 0 });
 
   // --- Generate prompt whenever inputs change ---
   useEffect(() => {
@@ -70,6 +76,56 @@ const App: React.FC = () => {
       alert("Gagal membuat konten: " + (e.message || "Pastikan API Key valid dan memiliki izin."));
     } finally {
       setIsGenerating(false);
+    }
+  };
+
+  // --- Batch Generate Handler ---
+  const handleBatchGenerate = async () => {
+    if (!topicInput.trim()) {
+      alert("Masukkan topik dakwah terlebih dahulu.");
+      return;
+    }
+    if (batchCount < 2) {
+      alert("Jumlah prompt minimal 2.");
+      return;
+    }
+    setIsBatchGenerating(true);
+    setBatchProgress({ completed: 0, total: batchCount });
+    try {
+      // 1. Generate semua konten via batch chunking
+      const batchResults = await generateBatchPosterContent(
+        topicInput,
+        batchCount,
+        (completed, total) => setBatchProgress({ completed, total })
+      );
+
+      // 2. Rakit setiap konten menjadi prompt final menggunakan promptGenerator
+      const allPrompts: string[] = [];
+      for (let i = 0; i < batchResults.length; i++) {
+        const data: PosterFormData = { ...INITIAL_FORM_DATA, ...batchResults[i] };
+        const promptText = generatePosterPrompt(category, data, selectedTechniques);
+        allPrompts.push(
+          `╔══════════════════════════════════════╗\n` +
+          `║        PROMPT ${(i + 1).toString().padStart(2, ' ')} dari ${batchResults.length.toString().padStart(2, ' ')}             ║\n` +
+          `╚══════════════════════════════════════╝\n\n` +
+          promptText +
+          `\n\n═══════════════ END ═══════════════\n`
+        );
+      }
+
+      // 3. Gabung dan download sebagai .txt
+      const finalText = allPrompts.join('\n\n');
+      const blob = new Blob([finalText], { type: 'text/plain;charset=utf-8' });
+      const safeTopic = topicInput.trim().replace(/[^a-zA-Z0-9\s]/g, '').replace(/\s+/g, '-').substring(0, 30);
+      saveAs(blob, `poster-batch-${safeTopic}-${batchResults.length}.txt`);
+
+      alert(`✅ Berhasil! ${batchResults.length} prompt telah diunduh.`);
+    } catch (e: any) {
+      console.error(e);
+      alert("Gagal batch generate: " + (e.message || "Pastikan API Key valid."));
+    } finally {
+      setIsBatchGenerating(false);
+      setBatchProgress({ completed: 0, total: 0 });
     }
   };
 
@@ -189,6 +245,92 @@ const App: React.FC = () => {
                       <>✨ Generate</>
                     )}
                   </button>
+                </div>
+
+                {/* ═══ BATCH GENERATION SECTION ═══ */}
+                <div style={{
+                  padding: '12px',
+                  background: 'linear-gradient(135deg, rgba(139, 92, 246, 0.08), rgba(212, 168, 83, 0.08))',
+                  borderRadius: 'var(--radius-md)',
+                  border: '1px solid rgba(139, 92, 246, 0.2)',
+                  marginBottom: '16px',
+                }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '8px' }}>
+                    <span style={{ fontSize: '13px' }}>📦</span>
+                    <span style={{ fontSize: '11px', fontWeight: 600, color: 'var(--accent-purple, #8b5cf6)' }}>Batch Generate</span>
+                  </div>
+                  <p style={{ fontSize: '10px', color: 'var(--text-tertiary)', marginBottom: '10px', lineHeight: 1.5 }}>
+                    Generate banyak prompt sekaligus dan unduh sebagai file <strong>.txt</strong>. Setiap prompt dijamin beda dalil, judul, dan visual.
+                  </p>
+                  <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      <label style={{ fontSize: '11px', color: 'var(--text-secondary)', whiteSpace: 'nowrap' }}>Jumlah:</label>
+                      <input
+                        type="number"
+                        min={2}
+                        max={100}
+                        value={batchCount}
+                        onChange={(e) => setBatchCount(Math.max(2, parseInt(e.target.value) || 2))}
+                        className="input-premium"
+                        style={{ width: '65px', textAlign: 'center', padding: '6px 8px' }}
+                        disabled={isBatchGenerating}
+                      />
+                    </div>
+                    <button
+                      onClick={handleBatchGenerate}
+                      disabled={isBatchGenerating || isGenerating}
+                      className="btn-premium btn-ghost"
+                      style={{
+                        flex: 1,
+                        padding: '8px 12px',
+                        background: isBatchGenerating ? 'var(--bg-glass)' : 'rgba(139, 92, 246, 0.15)',
+                        border: '1px solid rgba(139, 92, 246, 0.3)',
+                        color: 'var(--accent-purple, #8b5cf6)',
+                        fontSize: '11px',
+                        fontWeight: 600,
+                      }}
+                    >
+                      {isBatchGenerating ? (
+                        <>
+                          <svg className="animate-spin" width="12" height="12" viewBox="0 0 24 24" fill="none">
+                            <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3" strokeDasharray="31.4 31.4" strokeLinecap="round"/>
+                          </svg>
+                          Memproses...
+                        </>
+                      ) : (
+                        <>📦 Batch Generate & Download .txt</>
+                      )}
+                    </button>
+                  </div>
+
+                  {/* Progress Indicator */}
+                  {isBatchGenerating && batchProgress.total > 0 && (
+                    <div style={{ marginTop: '10px' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
+                        <span style={{ fontSize: '10px', color: 'var(--accent-purple, #8b5cf6)', fontWeight: 600 }}>
+                          ⏳ Memproses {batchProgress.completed} dari {batchProgress.total}...
+                        </span>
+                        <span style={{ fontSize: '10px', color: 'var(--text-tertiary)' }}>
+                          {Math.round((batchProgress.completed / batchProgress.total) * 100)}%
+                        </span>
+                      </div>
+                      <div style={{
+                        width: '100%',
+                        height: '6px',
+                        background: 'var(--bg-glass)',
+                        borderRadius: 'var(--radius-full)',
+                        overflow: 'hidden',
+                      }}>
+                        <div style={{
+                          width: `${(batchProgress.completed / batchProgress.total) * 100}%`,
+                          height: '100%',
+                          background: 'linear-gradient(90deg, #8b5cf6, #d4a853)',
+                          borderRadius: 'var(--radius-full)',
+                          transition: 'width 0.5s ease',
+                        }} />
+                      </div>
+                    </div>
+                  )}
                 </div>
 
                 {/* Content Fields */}
