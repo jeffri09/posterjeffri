@@ -194,8 +194,8 @@ export const generateBatchPosterContent = async (
             contents: prompt,
             config: {
               responseMimeType: 'application/json',
-              temperature: 0.7, // Lebih tinggi untuk variasi
-              topP: 0.95
+              temperature: 0.2, // Tetap rendah agar dalil tidak dikarang/dihalusinasi
+              topP: 0.85
             }
           });
 
